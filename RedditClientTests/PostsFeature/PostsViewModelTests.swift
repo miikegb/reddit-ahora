@@ -44,15 +44,14 @@ final class PostsViewModelTests: XCTestCase {
         XCTAssertEqual(vm.posts, mockLinks, "Expected PostsViewModel to get back mockLinks from MockPostsRepository, but the result didn't match.")
     }
     
-    func test_posts_are_cleared_out_on_error() {
+    func test_posts_are_cleared_out_on_error() throws {
         // Given
         enum TestError: Error {
             case repoError
         }
         let (postsSubject, mockRepo, vm) = setUpViewModel()
-        let mockLinks = [
-            Link(id: "", name: "", author: "", title: "", created: .now, createdUtc: .now, ups: 0, downs: 0, numComments: 0, subreddit: "", permalink: "", pinned: true)
-        ]
+        let link: Link = try FixturesLoader.load(json: "sampleLink")
+        let mockLinks = [link]
         vm.posts = mockLinks
         let subredditToSearch = "testsubreddit"
         

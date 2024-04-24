@@ -134,11 +134,12 @@ struct Comment:  Decodable {
     }
 }
 
-struct Link: CommonThing, Votable, Created, Decodable, Equatable {
+struct Link: CommonThing, Votable, Created, Decodable, Equatable, Identifiable {
     var id: String
     var name: String
     var author: String
     var title: String
+    var selftext: String
     var created: Date
     var createdUtc: Date
     var ups: Int
@@ -150,6 +151,7 @@ struct Link: CommonThing, Votable, Created, Decodable, Equatable {
     var permalink: String
     var postHint: String?
     var pinned: Bool
+    var urlOverridenByDest: String
     var contentCategories: [String]?
 }
 
