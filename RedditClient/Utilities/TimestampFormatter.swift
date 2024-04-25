@@ -1,5 +1,5 @@
 //
-//  Timestamp.swift
+//  TimestampFormatter.swift
 //  RedditClient
 //
 //  Created by Miguel Gonzalez on 4/9/24.

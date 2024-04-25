@@ -35,3 +35,13 @@ struct RedditPostsRepository: PostsRepository {
             .eraseToAnyPublisher()
     }
 }
+
+#if DEBUG
+struct PreviewPostsRepository: PostsRepository {
+    func getPosts(for subreddit: String) -> AnyPublisher<[Link], any Error> {
+        Just(SampleRedditPosts.previewPosts)
+            .mapError { _ in PostsError.erasedError }
+            .eraseToAnyPublisher()
+    }
+}
+#endif

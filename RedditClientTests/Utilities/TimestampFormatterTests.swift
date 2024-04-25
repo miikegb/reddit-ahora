@@ -1,5 +1,5 @@
 //
-//  TimestampTests.swift
+//  TimestampFormatterTests.swift
 //  RedditClientTests
 //
 //  Created by Miguel Gonzalez on 4/10/24.

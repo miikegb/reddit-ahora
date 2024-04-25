@@ -19,6 +19,11 @@ final class PostsViewModel: ObservableObject {
         self.postsRepository = postsRepository
         self.scheduler = scheduler
         
+        postsRepository.getPosts(for: "Home")
+            .replaceError(with: [])
+            .receive(on: scheduler)
+            .assign(to: &$posts)
+        
         $searchText
             .filter { $0.count > 0 }
             .removeDuplicates()

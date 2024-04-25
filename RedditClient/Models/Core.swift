@@ -151,7 +151,7 @@ struct Link: CommonThing, Votable, Created, Decodable, Equatable, Identifiable {
     var permalink: String
     var postHint: String?
     var pinned: Bool
-    var urlOverridenByDest: String
+    var urlOverridenByDest: String?
     var contentCategories: [String]?
 }
 

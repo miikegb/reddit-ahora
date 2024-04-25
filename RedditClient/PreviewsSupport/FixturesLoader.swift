@@ -6,7 +6,6 @@
 //
 
 import Foundation
-@testable import RedditClient
 
 enum FixturesLoaderError: Error {
     case fixtureNotFound, unableToReadFixture
