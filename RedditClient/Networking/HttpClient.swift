@@ -56,9 +56,24 @@ extension URLRequest {
     }
 }
 
-final class HttpClient {
+protocol URLSessionProvider {
+    func dataTask(for request: URLRequest) -> AnyPublisher<(data: Data, response: URLResponse), URLError>
+}
+
+extension URLSession: URLSessionProvider {
+    func dataTask(for request: URLRequest) -> AnyPublisher<(data: Data, response: URLResponse), URLError> {
+        URLSession.DataTaskPublisher(request: request, session: self)
+            .eraseToAnyPublisher()
+    }
+}
+
+protocol Fetcher {
+    func fetch<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error>
+}
+
+final class HttpClient: Fetcher {
     private let config: HttpClientConfiguration
-    private var urlSession: URLSession { config.session }
+    private var urlSession: URLSessionProvider { config.session }
     private var baseUrl: URL { config.baseUrl }
     
     init(config: HttpClientConfiguration) {
@@ -66,7 +81,7 @@ final class HttpClient {
     }
     
     func fetch<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error> {
-        URLSession.DataTaskPublisher(request: .init(for: resource, baseUrl: baseUrl, headers: config.defaultHeaders), session: urlSession)
+        urlSession.dataTask(for: .init(for: resource, baseUrl: baseUrl, headers: config.defaultHeaders))
             .tryMap { data, _ in
                 try resource.responseDecoder(data)
             }

@@ -17,16 +17,16 @@ protocol PostsRepository {
 }
 
 struct RedditPostsRepository: PostsRepository {
-    private let httpClient: HttpClient
+    private let networkFetcher: Fetcher
     private let cancelBag = CancelBag()
     
-    init(httpClient: HttpClient) {
-        self.httpClient = httpClient
+    init(fetcher: Fetcher) {
+        self.networkFetcher = fetcher
     }
     
     func getPosts(for subreddit: String) -> AnyPublisher<[Link], Error> {
         let resource = Resource(path: "/r/\(subreddit)", responseDecoder: ResponseDecoder(for: Listing.self))
-        return httpClient.fetch(resource)
+        return networkFetcher.fetch(resource)
             .map { listing in
                 return listing.children.compactMap { thing in
                     if case let .link(link) = thing { link } else { nil }
