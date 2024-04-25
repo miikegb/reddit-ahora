@@ -22,7 +22,7 @@ final class TimestampTests: XCTestCase {
     func test_human_readable_logic_for_timestamp() {
         // Given
         let now = Date.now
-        let timestamp = Timestamp(referenceDate: now)
+        let timestamp = TimestampFormatter(referenceDate: now)
         
         // Then
         // Check "now"

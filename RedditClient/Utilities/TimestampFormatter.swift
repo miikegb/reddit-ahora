@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Timestamp {
+struct TimestampFormatter {
     typealias Diffs = (year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int)
     var referenceDate: Date = .now
 

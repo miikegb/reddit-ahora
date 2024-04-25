@@ -33,8 +33,8 @@
 		453338512BC0AEF800739815 /* MockPostsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338502BC0AEF800739815 /* MockPostsRepository.swift */; };
 		453338532BC4984B00739815 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 453338522BC4984B00739815 /* README.md */; };
 		453338552BC4A14300739815 /* MainPostsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338542BC4A14300739815 /* MainPostsView.swift */; };
-		453338572BC6477400739815 /* Timestamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338562BC6477400739815 /* Timestamp.swift */; };
-		453338592BC6DD7300739815 /* TimestampTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338582BC6DD7300739815 /* TimestampTests.swift */; };
+		453338572BC6477400739815 /* TimestampFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338562BC6477400739815 /* TimestampFormatter.swift */; };
+		453338592BC6DD7300739815 /* TimestampFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338582BC6DD7300739815 /* TimestampFormatterTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -84,8 +84,8 @@
 		453338502BC0AEF800739815 /* MockPostsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPostsRepository.swift; sourceTree = "<group>"; };
 		453338522BC4984B00739815 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		453338542BC4A14300739815 /* MainPostsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPostsView.swift; sourceTree = "<group>"; };
-		453338562BC6477400739815 /* Timestamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timestamp.swift; sourceTree = "<group>"; };
-		453338582BC6DD7300739815 /* TimestampTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampTests.swift; sourceTree = "<group>"; };
+		453338562BC6477400739815 /* TimestampFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampFormatter.swift; sourceTree = "<group>"; };
+		453338582BC6DD7300739815 /* TimestampFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampFormatterTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -182,7 +182,7 @@
 		4533382F2BBCC76400739815 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				453338582BC6DD7300739815 /* TimestampTests.swift */,
+				453338582BC6DD7300739815 /* TimestampFormatterTests.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -219,7 +219,7 @@
 			children = (
 				453338222BB52B9100739815 /* CancelBag.swift */,
 				4533383C2BC073D000739815 /* JSONDecoder.swift */,
-				453338562BC6477400739815 /* Timestamp.swift */,
+				453338562BC6477400739815 /* TimestampFormatter.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -423,7 +423,7 @@
 				453337F12BB366E000739815 /* RedditClientApp.swift in Sources */,
 				4533383D2BC073D000739815 /* JSONDecoder.swift in Sources */,
 				4533381E2BB36DC300739815 /* RedditPostsRepository.swift in Sources */,
-				453338572BC6477400739815 /* Timestamp.swift in Sources */,
+				453338572BC6477400739815 /* TimestampFormatter.swift in Sources */,
 				453338552BC4A14300739815 /* MainPostsView.swift in Sources */,
 				453338212BB4B54300739815 /* Core.swift in Sources */,
 				453338252BB5313100739815 /* PostsViewModel.swift in Sources */,
@@ -441,7 +441,7 @@
 				453338392BC0714E00739815 /* FixturesLoader.swift in Sources */,
 				4533384E2BC0ADE600739815 /* Entry.swift in Sources */,
 				453338512BC0AEF800739815 /* MockPostsRepository.swift in Sources */,
-				453338592BC6DD7300739815 /* TimestampTests.swift in Sources */,
+				453338592BC6DD7300739815 /* TimestampFormatterTests.swift in Sources */,
 				453338482BC0AB8A00739815 /* Verify.swift in Sources */,
 				453338402BC0A94F00739815 /* CancelBag.swift in Sources */,
 				453338462BC0AB5900739815 /* Stub.swift in Sources */,
