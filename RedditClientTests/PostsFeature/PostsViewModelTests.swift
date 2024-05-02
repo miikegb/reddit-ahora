@@ -21,7 +21,7 @@ final class PostsViewModelTests: XCTestCase {
     func test_posts_delivered_to_the_view_come_from_the_posts_repository() throws {
         // Given
         let (postsSubject, mockRepo, vm) = setUpViewModel()
-        let link: Link = try FixturesLoader.load(json: "sampleLink")
+        let link: Link = try TestFixturesLoader.load(json: "sampleLink")
         let mockLinks = [link]
         let subredditToSearch = "testsubreddit"
         
@@ -50,7 +50,7 @@ final class PostsViewModelTests: XCTestCase {
             case repoError
         }
         let (postsSubject, mockRepo, vm) = setUpViewModel()
-        let link: Link = try FixturesLoader.load(json: "sampleLink")
+        let link: Link = try TestFixturesLoader.load(json: "sampleLink")
         let mockLinks = [link]
         vm.posts = mockLinks
         let subredditToSearch = "testsubreddit"

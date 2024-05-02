@@ -12,8 +12,8 @@ enum FixturesLoaderError: Error {
 }
 
 final class FixturesLoader {
-    static func load<T: Decodable>(json fixtureName: String) throws -> T {
-        guard let fixtureUrl = Bundle(for: Self.self).url(forResource: fixtureName, withExtension: "json")
+    static func load<T: Decodable>(json fixtureName: String, bundle: Bundle = Bundle(for: FixturesLoader.self)) throws -> T {
+        guard let fixtureUrl = bundle.url(forResource: fixtureName, withExtension: "json")
         else { throw FixturesLoaderError.fixtureNotFound }
         
         let jsonData = try Data(contentsOf: fixtureUrl)
