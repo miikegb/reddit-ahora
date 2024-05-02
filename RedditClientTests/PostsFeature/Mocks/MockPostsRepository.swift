@@ -16,11 +16,23 @@ extension MockRecorder {
 final class MockPostsRepository: PostsRepository, Mock {
     let recorder: MockRecorder<MockPostsRepository> = MockRecorder()
     
+    func makeBuilder() -> Builder {
+        Builder(recorder)
+    }
+    
+    func makeVerifier() -> Verifier {
+        Verifier(recorder)
+    }
+    
+    func verifyExpectations(strict: Bool = true, file: StaticString = #file, line: UInt = #line) {
+        recorder.verifyExpectations(strict: strict, file: file, line: line)
+    }
+
     func getPosts(for subreddit: String) -> AnyPublisher<[Link], any Error> {
         let interaction: Props = .getPosts(subreddit: .exact(subreddit))
         recorder.record(interaction: interaction)
         do {
-            let returnResolver = StubResolver<MockPostsRepository, String, AnyPublisher<[Link], any Error>>(mock: self)
+            let returnResolver = StubResolver<MockPostsRepository, String, AnyPublisher<[Link], any Error>>(recorder: recorder, mock: self)
             return try returnResolver.resolve(for: interaction) { $0(subreddit) }
         } catch {
             return recorder.resolveReturnValue(for: interaction)
@@ -31,7 +43,7 @@ final class MockPostsRepository: PostsRepository, Mock {
         let interaction: Props = .getHomePosts
         recorder.record(interaction: interaction)
         do {
-            let returnResolver = StubResolver<MockPostsRepository, Void, AnyPublisher<[Link], any Error>>(mock: self)
+            let returnResolver = StubResolver<MockPostsRepository, Void, AnyPublisher<[Link], any Error>>(recorder: recorder, mock: self)
             return try returnResolver.resolve(for: interaction) { $0(()) }
         } catch {
             return recorder.resolveReturnValue(for: interaction)
@@ -39,8 +51,8 @@ final class MockPostsRepository: PostsRepository, Mock {
     }
     
     // Step 1: Define protocol requirements in the Props enum
-    enum Props: Hashable, Matcheable {
-        case getPosts(subreddit: ParameterMatch<String>)
+    enum Props: Matcheable {
+        case getPosts(subreddit: Matcher<String>)
         case getHomePosts
         
         func matches(_ other: Props) -> Bool {
@@ -59,7 +71,7 @@ final class MockPostsRepository: PostsRepository, Mock {
             self.recorder = recorder
         }
         
-        func getPosts(for subreddit: ParameterMatch<String> = .any) -> StubBuilder<Self, String, AnyPublisher<[Link], any Error>> {
+        func getPosts(for subreddit: Matcher<String> = .any) -> StubBuilder<Self, String, AnyPublisher<[Link], any Error>> {
             .init(recorder: recorder, member: .getPosts(subreddit: subreddit))
         }
         
@@ -75,7 +87,7 @@ final class MockPostsRepository: PostsRepository, Mock {
             self.recorder = recorder
         }
         
-        func getPosts(for subreddit: ParameterMatch<String> = .any) -> VerifierBuilder<Self> {
+        func getPosts(for subreddit: Matcher<String> = .any) -> VerifierBuilder<Self> {
             .init(recorder: recorder, member: .getPosts(subreddit: subreddit))
         }
         

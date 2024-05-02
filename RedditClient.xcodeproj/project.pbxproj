@@ -33,6 +33,8 @@
 		453338552BC4A14300739815 /* MainPostsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338542BC4A14300739815 /* MainPostsView.swift */; };
 		453338572BC6477400739815 /* TimestampFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338562BC6477400739815 /* TimestampFormatter.swift */; };
 		453338592BC6DD7300739815 /* TimestampFormatterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338582BC6DD7300739815 /* TimestampFormatterTests.swift */; };
+		455C5D812BE3123E008DEA5D /* Matcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 455C5D802BE3123E008DEA5D /* Matcher.swift */; };
+		455C5D832BE34C00008DEA5D /* IdentifiableProp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 455C5D822BE34C00008DEA5D /* IdentifiableProp.swift */; };
 		455C5D872BE3E3A8008DEA5D /* CachedAsyncImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 455C5D862BE3E3A8008DEA5D /* CachedAsyncImageView.swift */; };
 		455C5D892BE3E4E1008DEA5D /* Core+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 455C5D882BE3E4E1008DEA5D /* Core+Extensions.swift */; };
 		45DA934D2BDA9BDA00DBB158 /* PreviewRedditPosts.json in Resources */ = {isa = PBXBuildFile; fileRef = 45DA934C2BDA9BDA00DBB158 /* PreviewRedditPosts.json */; };
@@ -92,6 +94,8 @@
 		453338542BC4A14300739815 /* MainPostsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPostsView.swift; sourceTree = "<group>"; };
 		453338562BC6477400739815 /* TimestampFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampFormatter.swift; sourceTree = "<group>"; };
 		453338582BC6DD7300739815 /* TimestampFormatterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimestampFormatterTests.swift; sourceTree = "<group>"; };
+		455C5D802BE3123E008DEA5D /* Matcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Matcher.swift; sourceTree = "<group>"; };
+		455C5D822BE34C00008DEA5D /* IdentifiableProp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentifiableProp.swift; sourceTree = "<group>"; };
 		455C5D862BE3E3A8008DEA5D /* CachedAsyncImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CachedAsyncImageView.swift; sourceTree = "<group>"; };
 		455C5D882BE3E4E1008DEA5D /* Core+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Core+Extensions.swift"; sourceTree = "<group>"; };
 		45DA934C2BDA9BDA00DBB158 /* PreviewRedditPosts.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = PreviewRedditPosts.json; sourceTree = "<group>"; };
@@ -274,7 +278,9 @@
 				4533384B2BC0AD7600739815 /* Mock.swift */,
 				453338452BC0AB5900739815 /* Stub.swift */,
 				453338472BC0AB8A00739815 /* Verify.swift */,
+				455C5D822BE34C00008DEA5D /* IdentifiableProp.swift */,
 				453338492BC0ABD900739815 /* Introspection.swift */,
+				455C5D802BE3123E008DEA5D /* Matcher.swift */,
 			);
 			path = Mocking;
 			sourceTree = "<group>";
@@ -485,6 +491,8 @@
 				45DA93562BDACE9D00DBB158 /* TestFixturesLoader.swift in Sources */,
 				4533384C2BC0AD7600739815 /* Mock.swift in Sources */,
 				453338272BB5A20C00739815 /* PostsViewModelTests.swift in Sources */,
+				455C5D812BE3123E008DEA5D /* Matcher.swift in Sources */,
+				455C5D832BE34C00008DEA5D /* IdentifiableProp.swift in Sources */,
 				4533384A2BC0ABD900739815 /* Introspection.swift in Sources */,
 				453338332BBF0CA700739815 /* MockRecorder.swift in Sources */,
 				4533384E2BC0ADE600739815 /* Entry.swift in Sources */,

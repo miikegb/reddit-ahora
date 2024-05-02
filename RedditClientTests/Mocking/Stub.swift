@@ -37,10 +37,11 @@ struct StubBuilder<SuperBuilder: MockBuilder, Arguments, ReturnType> {
 struct StubResolver<T: Mock, Arguments, ReturnType> {
     typealias InnerClosureType = (Arguments) -> ReturnType
     typealias ClosureType = (InnerClosureType) -> ReturnType
+    var recorder: MockRecorder<T>
     var mock: T
     
     func resolve(for member: T.Props, closure: ClosureType) throws -> ReturnType {
-        return try mock.recorder.resolveReturnValue(for: member) { savedClosure in
+        return try recorder.resolveReturnValue(for: member) { savedClosure in
             if let castClosure = savedClosure as? InnerClosureType {
                 return closure(castClosure)
             }

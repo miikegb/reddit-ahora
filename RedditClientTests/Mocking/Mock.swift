@@ -7,23 +7,24 @@
 
 import Foundation
 
-protocol MockBuilder<MockType> {
-    associatedtype MockType: Mock
-    init(_ recorder: MockRecorder<MockType>)
-}
-
-protocol MockVerifier<MockType> {
-    associatedtype MockType: Mock
-    init(_ recorder: MockRecorder<MockType>)
-}
-
 protocol Mock {
-    associatedtype Props: Hashable & Matcheable
+    associatedtype Props: Matcheable
     associatedtype Builder: MockBuilder<Self>
     associatedtype Verifier: MockVerifier<Self>
     
-    var recorder: MockRecorder<Self> { get }
+    func makeBuilder() -> Builder
+    func makeVerifier() -> Verifier
+    func verifyExpectations(strict: Bool, file: StaticString, line: UInt)
 }
+
+protocol MockRecordeable {
+    associatedtype MockType: Mock
+    init(_ recorder: MockRecorder<MockType>)
+}
+
+protocol MockBuilder<MockType>: MockRecordeable {}
+
+protocol MockVerifier<MockType>: MockRecordeable {}
 
 protocol Matcheable {
     func matches(_ other: Self) -> Bool

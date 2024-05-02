@@ -11,7 +11,7 @@ import XCTest
 final class MockRecorder<T: Mock> {
     typealias Prop = T.Props
     
-    private var returns: [Prop: ReturnKind<Any>] = [:]
+    private var returns: [IdentifiableProp<Prop>: ReturnKind<Any>] = [:]
     private var interactions: [Prop] = []
     private var expectations: [MockExpectation<Prop>] = []
     
@@ -24,11 +24,11 @@ final class MockRecorder<T: Mock> {
     }
     
     func `return`<ReturnType>(_ type: ReturnType, for prop: Prop) {
-        returns[prop] = .value(type)
+        returns[IdentifiableProp(prop: prop)] = .value(type)
     }
     
     func `return`<Arguments, ReturnType>(_ closure: @escaping (Arguments) -> ReturnType, for prop: Prop) {
-        returns[prop] = .closure(closure)
+        returns[IdentifiableProp(prop: prop)] = .closure(closure)
     }
     
     func add(expectation: ExpectationRecurrence, for prop: Prop) {
@@ -36,7 +36,7 @@ final class MockRecorder<T: Mock> {
     }
     
     func resolveReturnValue<ReturnType>(for member: Prop, closureResolver: (Any) throws -> ReturnType) throws -> ReturnType {
-        guard let matchedKey = returns.keys.filter({ $0.matches(member) }).first,
+        guard let matchedKey = returns.keys.filter({ $0.prop.matches(member) }).first,
               let value = returns[matchedKey]
         else {
             throw ResolveError.notFound

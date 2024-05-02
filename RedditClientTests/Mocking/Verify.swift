@@ -12,18 +12,6 @@ struct MockExpectation<Prop: Matcheable> {
     var ocurrence: ExpectationRecurrence
 }
 
-enum ParameterMatch<T: Hashable>: Hashable, Matcheable { 
-    case any
-    case exact(T)
-    
-    func matches(_ other: ParameterMatch) -> Bool {
-        return switch (self, other) {
-        case (.any, _), (_, .any): true
-        case let (.exact(param1), .exact(param2)): param1 == param2
-        }
-    }
-}
-
 enum ExpectationRecurrence {
     case none, once, atLeastOnce, count(Int)
     

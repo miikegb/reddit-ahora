@@ -8,13 +8,13 @@
 import Foundation
 
 func stub<T: Mock>(_ mock: T) -> T.Builder {
-    type(of: mock).Builder(mock.recorder)
+    mock.makeBuilder()
 }
 
 func expect<T: Mock>(_ mock: T) -> T.Verifier {
-    type(of: mock).Verifier(mock.recorder)
+    mock.makeVerifier()
 }
 
 func verify<T: Mock>(_ mock: T, strict: Bool = true, file: StaticString = #file, line: UInt = #line) {
-    mock.recorder.verifyExpectations(strict: strict, file: file, line: line)
+    mock.verifyExpectations(strict: strict, file: file, line: line)
 }
