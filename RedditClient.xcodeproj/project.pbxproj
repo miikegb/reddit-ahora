@@ -19,7 +19,6 @@
 		453338232BB52B9100739815 /* CancelBag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338222BB52B9100739815 /* CancelBag.swift */; };
 		453338252BB5313100739815 /* PostsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338242BB5313100739815 /* PostsViewModel.swift */; };
 		453338272BB5A20C00739815 /* PostsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338262BB5A20C00739815 /* PostsViewModelTests.swift */; };
-		4533382E2BB9AD8A00739815 /* URLValidatorMacro in Frameworks */ = {isa = PBXBuildFile; productRef = 4533382D2BB9AD8A00739815 /* URLValidatorMacro */; };
 		453338332BBF0CA700739815 /* MockRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 453338322BBF0CA700739815 /* MockRecorder.swift */; };
 		453338372BC0708D00739815 /* sampleLink.json in Resources */ = {isa = PBXBuildFile; fileRef = 453338362BC0708D00739815 /* sampleLink.json */; };
 		4533383D2BC073D000739815 /* JSONDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4533383C2BC073D000739815 /* JSONDecoder.swift */; };
@@ -105,7 +104,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4533382E2BB9AD8A00739815 /* URLValidatorMacro in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,7 +336,6 @@
 			);
 			name = RedditClient;
 			packageProductDependencies = (
-				4533382D2BB9AD8A00739815 /* URLValidatorMacro */,
 			);
 			productName = RedditClient;
 			productReference = 453337ED2BB366E000739815 /* RedditClient.app */;
@@ -413,7 +410,6 @@
 			);
 			mainGroup = 453337E42BB366E000739815;
 			packageReferences = (
-				453338282BB9AC9100739815 /* XCLocalSwiftPackageReference "../URLValidatorMacro" */,
 			);
 			productRefGroup = 453337EE2BB366E000739815 /* Products */;
 			projectDirPath = "";
@@ -841,20 +837,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		453338282BB9AC9100739815 /* XCLocalSwiftPackageReference "../URLValidatorMacro" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../URLValidatorMacro;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		4533382D2BB9AD8A00739815 /* URLValidatorMacro */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = URLValidatorMacro;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 453337E52BB366E000739815 /* Project object */;
 }
