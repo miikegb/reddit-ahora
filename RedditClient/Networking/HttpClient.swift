@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-enum HttpMethod {
+enum HttpMethod: Equatable {
     case get
     case post(payload: Data)
     
@@ -20,7 +20,7 @@ enum HttpMethod {
     }
 }
 
-enum SortResults: String {
+enum SortResults: String, Equatable {
     case best, hot, new, top, rising
     var path: String {
         "\(rawValue).json"
@@ -34,6 +34,13 @@ struct Resource<Response: Decodable> {
     var responseDecoder: ResponseDecoder<Response>
 }
 
+extension Resource: Equatable {
+    static func ==(_ lhs: Resource<Response>, _ rhs: Resource<Response>) -> Bool {
+        lhs.path == rhs.path &&
+        lhs.method == rhs.method &&
+        lhs.sort == rhs.sort
+    }
+}
 
 struct HttpClientConfiguration {
     var baseUrl: URL
@@ -85,6 +92,28 @@ final class HttpClient: Fetcher {
             .tryMap { data, _ in
                 try resource.responseDecoder(data)
             }
+            .eraseToAnyPublisher()
+    }
+}
+
+extension HttpClientConfiguration {
+    static var `default`: HttpClientConfiguration {
+        HttpClientConfiguration(baseUrl: URL(string: "https://reddit.com")!, session: .shared)
+    }
+}
+
+enum HTTPError: Error {
+    case invalidUrlFormat
+    case unableToLoadImage
+}
+
+struct SimpleImageFetcher {
+    func fetchImage(from url: String) -> AnyPublisher<Data, Error> {
+        guard let imageUrl = URL(string: url) else { return Fail(error: HTTPError.invalidUrlFormat).eraseToAnyPublisher() }
+        return URLSession.shared.dataTaskPublisher(for: imageUrl)
+            .mapError { _ in HTTPError.unableToLoadImage }
+            .map { data, _ in data }
+            .receive(on: RunLoop.main)
             .eraseToAnyPublisher()
     }
 }

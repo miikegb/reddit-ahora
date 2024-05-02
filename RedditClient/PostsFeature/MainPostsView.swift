@@ -16,6 +16,7 @@ struct MainPostsView: View {
                 PostItemView(post: post)
             }
         }
+        .padding(.horizontal)
     }
 }
 
@@ -42,19 +43,13 @@ struct PostHeader: View {
 }
 
 struct PhotoContentView: View {
-    var post: Link
+    var photoUrl: String
     
     var body: some View {
         VStack {
-            if let imageUrl = post.urlOverridenByDest {
-                AsyncImage(url: URL(string: imageUrl)) { image in
-                    image.image?.resizable()
-                }
-                .frame(maxWidth: .infinity)
-                .clipShape(RoundedRectangle(cornerSize: CGSize(width: 20, height: 20)))
-            } else {
-                EmptyView()
-            }
+            CachedAsyncImageView(imageUrl: photoUrl)
+                .frame(maxWidth: .infinity, maxHeight: 500)
+                .cornerRadius(20)
         }
     }
 }
@@ -66,16 +61,30 @@ struct PostItemView: View {
         VStack(alignment: .leading) {
             PostHeader(post: post)
             
-            HStack {
-                Text(post.title)
-                    .font(.title)
-            }
-            .padding(.bottom)
+            MarkdownText(styled: post.styledTitle, fallback: post.title)
+                .font(.title2)
+                .padding(.bottom)
             
-            Text(post.selftext)
-            PhotoContentView(post: post)
+            MarkdownText(styled: post.styledText, fallback: post.selftext)
+                .lineLimit(5)
+            
+            if post.postHint == "image" {
+                PhotoContentView(photoUrl: post.url)
+            }
         }
         .padding(.vertical)
+    }
+}
+
+struct MarkdownText: View {
+    var styled: AttributedString?
+    var fallback: String
+    var body: some View {
+        if let styledText = styled {
+            Text(styledText)
+        } else {
+            Text(fallback)
+        }
     }
 }
 

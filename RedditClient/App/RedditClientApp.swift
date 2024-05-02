@@ -12,6 +12,13 @@ struct RedditClientApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .background(TranslucentVisualEffect().ignoresSafeArea())
         }
+        .windowStyle(.hiddenTitleBar)
     }
+}
+
+struct TranslucentVisualEffect: NSViewRepresentable {
+    func makeNSView(context: Context) -> some NSView { NSVisualEffectView() }
+    func updateNSView(_ nsView: NSViewType, context: Context) { }
 }

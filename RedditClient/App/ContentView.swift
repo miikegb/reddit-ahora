@@ -9,15 +9,18 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
+        MainPostsView(
+            viewModel: PostsViewModel(
+                postsRepository: RedditPostsRepository(
+                    fetcher: HttpClient(config: .default)
+                )
+            )
+        )
+        .cornerRadius(5)
         .padding()
     }
 }
+
 
 #Preview {
     ContentView()

@@ -24,7 +24,7 @@ struct TimestampFormatter {
         return prevMonthComponents.day!
     }
 
-    // MARK: - Human readable timestamp of a given date, using as a comparison point the referenceDate.
+    // MARK: - Human readable timestamp of a given date, using as a comparison point the `referenceDate`.
     func callAsFunction(from date: Date) -> String {
         let (yearDiff, monthDiff, dayDiff, hourDiff, minuteDiff, secondDiff) = getDiffs(from: date)
         
