@@ -8,30 +8,44 @@
 import Foundation
 import Combine
 
-enum PostsError: Error {
-    case erasedError
-}
-
 protocol PostsRepository {
     func getPosts(for subreddit: String) -> AnyPublisher<[Link], Error>
+    func getHomePosts() -> AnyPublisher<[Link], Error>
+}
+
+protocol ThingExtractor<Thing> {
+    associatedtype Thing
+    func callAsFunction(_ listing: Listing) -> Thing
+}
+
+struct PostsExtractor: ThingExtractor {
+    func callAsFunction(_ listing: Listing) -> [Link] {
+        return listing.children.compactMap { thing in
+            if case let .link(link) = thing { link } else { nil }
+        }
+    }
 }
 
 struct RedditPostsRepository: PostsRepository {
     private let networkFetcher: Fetcher
-    private let cancelBag = CancelBag()
     
     init(fetcher: Fetcher) {
         self.networkFetcher = fetcher
     }
     
+    func getHomePosts() -> AnyPublisher<[Link], Error> {
+        let resource = Resource(path: "", sort: .best, responseDecoder: .init(for: Listing.self))
+        return get(resource: resource, extractor: PostsExtractor())
+    }
+    
     func getPosts(for subreddit: String) -> AnyPublisher<[Link], Error> {
-        let resource = Resource(path: "/r/\(subreddit)", responseDecoder: ResponseDecoder(for: Listing.self))
+        let resource = Resource(path: "/r/\(subreddit)", responseDecoder: .init(for: Listing.self))
+        return get(resource: resource, extractor: PostsExtractor())
+    }
+    
+    private func get<T>(resource: Resource<Listing>, extractor: some ThingExtractor<T>) -> AnyPublisher<T, Error> {
         return networkFetcher.fetch(resource)
-            .map { listing in
-                return listing.children.compactMap { thing in
-                    if case let .link(link) = thing { link } else { nil }
-                }
-            }
+            .map { extractor($0) }
             .eraseToAnyPublisher()
     }
 }
@@ -39,8 +53,16 @@ struct RedditPostsRepository: PostsRepository {
 #if DEBUG
 struct PreviewPostsRepository: PostsRepository {
     func getPosts(for subreddit: String) -> AnyPublisher<[Link], any Error> {
+        getPreviewPosts()
+    }
+    
+    func getHomePosts() -> AnyPublisher<[Link], any Error> {
+        getPreviewPosts()
+    }
+    
+    private func getPreviewPosts() -> AnyPublisher<[Link], any Error> {
         Just(SampleRedditPosts.previewPosts)
-            .mapError { _ in PostsError.erasedError }
+            .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
     }
 }

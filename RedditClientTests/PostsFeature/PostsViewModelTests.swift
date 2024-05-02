@@ -70,4 +70,26 @@ final class PostsViewModelTests: XCTestCase {
         verify(mockRepo)
         XCTAssertTrue(vm.posts.isEmpty)
     }
+    
+    func test_home_posts_are_fetched_upon_initialization() throws {
+        // Given
+        let postsSubject = PassthroughSubject<[Link], Error>()
+        let mockRepo = MockPostsRepository()
+        let link: Link = try TestFixturesLoader.load(json: "sampleLink")
+        stub(mockRepo)
+            .getHomePosts()
+            .andReturn(postsSubject.eraseToAnyPublisher())
+        
+        expect(mockRepo)
+            .getHomePosts()
+            .toBeCalled()
+
+        // When
+        let vm = PostsViewModel(postsRepository: mockRepo, scheduler: ImmediateScheduler.shared)
+        postsSubject.send([link])
+        
+        // Then
+        XCTAssertEqual(vm.posts.count, 1)
+        verify(mockRepo)
+    }
 }

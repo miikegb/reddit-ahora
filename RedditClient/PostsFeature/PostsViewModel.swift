@@ -19,7 +19,7 @@ final class PostsViewModel: ObservableObject {
         self.postsRepository = postsRepository
         self.scheduler = scheduler
         
-        postsRepository.getPosts(for: "Home")
+        postsRepository.getHomePosts()
             .replaceError(with: [])
             .receive(on: scheduler)
             .assign(to: &$posts)

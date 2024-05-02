@@ -27,14 +27,27 @@ final class MockPostsRepository: PostsRepository, Mock {
         }
     }
     
+    func getHomePosts() -> AnyPublisher<[Link], any Error> {
+        let interaction: Props = .getHomePosts
+        recorder.record(interaction: interaction)
+        do {
+            let returnResolver = StubResolver<MockPostsRepository, Void, AnyPublisher<[Link], any Error>>(mock: self)
+            return try returnResolver.resolve(for: interaction) { $0(()) }
+        } catch {
+            return recorder.resolveReturnValue(for: interaction)
+        }
+    }
+    
     // Step 1: Define protocol requirements in the Props enum
     enum Props: Hashable, Matcheable {
         case getPosts(subreddit: ParameterMatch<String>)
+        case getHomePosts
         
         func matches(_ other: Props) -> Bool {
-            return switch (self, other) {
-            case let (.getPosts(subreddit: param1), .getPosts(subreddit: param2)):
-                param1.matches(param2)
+            switch (self, other) {
+            case let (.getPosts(subreddit: param1), .getPosts(subreddit: param2)): param1.matches(param2)
+            case (.getHomePosts, .getHomePosts): true
+            default: false
             }
         }
     }
@@ -49,6 +62,10 @@ final class MockPostsRepository: PostsRepository, Mock {
         func getPosts(for subreddit: ParameterMatch<String> = .any) -> StubBuilder<Self, String, AnyPublisher<[Link], any Error>> {
             .init(recorder: recorder, member: .getPosts(subreddit: subreddit))
         }
+        
+        func getHomePosts() -> StubBuilder<Self, Void, AnyPublisher<[Link], any Error>> {
+            .init(recorder: recorder, member: .getHomePosts)
+        }
     }
     
     // Step 3: Define Verifier, similar to its peer Builder it mirrors the interface of the protocol
@@ -60,6 +77,10 @@ final class MockPostsRepository: PostsRepository, Mock {
         
         func getPosts(for subreddit: ParameterMatch<String> = .any) -> VerifierBuilder<Self> {
             .init(recorder: recorder, member: .getPosts(subreddit: subreddit))
+        }
+        
+        func getHomePosts() -> VerifierBuilder<Self> {
+            .init(recorder: recorder, member: .getHomePosts)
         }
     }
 }
