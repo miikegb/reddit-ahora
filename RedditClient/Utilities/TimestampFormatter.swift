@@ -13,71 +13,33 @@ struct TimestampFormatter {
 
     // MARK: - Internal
     private static let calendar = Calendar.current
-    private var cal: Calendar { Self.calendar }
-    private let targetDateComponents: Set<Calendar.Component> = [.second, .minute, .hour, .day, .month, .year]
-    private var lastDayOfPrevMonth: Int {
-        let todayComps = cal.dateComponents(targetDateComponents, from: referenceDate)
-        let firstDayOfThisMonthComps = DateComponents(calendar: cal, year: todayComps.year, month: todayComps.month, day: 1)
-        let firstDayOfThisMonth = cal.date(from: firstDayOfThisMonthComps)!
-        let prevMonth = cal.date(byAdding: .minute, value: -1, to: firstDayOfThisMonth)!
-        let prevMonthComponents = cal.dateComponents([.day], from: prevMonth)
-        return prevMonthComponents.day!
-    }
 
     // MARK: - Human readable timestamp of a given date, using as a comparison point the `referenceDate`.
     func callAsFunction(from date: Date) -> String {
-        let (yearDiff, monthDiff, dayDiff, hourDiff, minuteDiff, secondDiff) = getDiffs(from: date)
-        
-        if yearDiff > 0 {
-            return process(component: monthDiff,
-                           wrappingComponent: yearDiff,
-                           lowerDescription: MonthDescriptor(value: 12 - abs(monthDiff)), 
-                           upperDescription: YearDescriptor(value: yearDiff))
-        }
-        if monthDiff > 0 {
-            return process(component: dayDiff, 
-                           wrappingComponent: monthDiff,
-                           lowerDescription: DaysDescriptor(value: lastDayOfPrevMonth - abs(dayDiff)),
-                           upperDescription: MonthDescriptor(value: monthDiff))
-        }
-        if dayDiff > 0 {
-            return process(component: hourDiff, 
-                           wrappingComponent: dayDiff,
-                           lowerDescription: HoursDescriptor(value: 24 - abs(hourDiff)),
-                           upperDescription: DaysDescriptor(value: dayDiff))
-        }
-        if hourDiff > 0 {
-            return process(component: minuteDiff,
-                           wrappingComponent: hourDiff,
-                           lowerDescription: MinsDescriptor(value: 60 - abs(minuteDiff)),
-                           upperDescription: HoursDescriptor(value: hourDiff))
-        }
-        
-        return switch (minuteDiff, secondDiff) {
-        case (0, 1...59), (1, ..<0): SecsDescriptor().description()
-        default: MinsDescriptor(value: minuteDiff).description()
-        }
+        getDiffDescriptor(from: date).description()
     }
     
-    private func process(component: Int, wrappingComponent: Int, lowerDescription: @autoclosure () -> some TimeDiffDescriptor, upperDescription: @autoclosure () -> some TimeDiffDescriptor) -> String {
-        switch component {
-        case ..<0: lowerDescription().description()
-        default: upperDescription().description()
+    private func getDiffDescriptor(from date: Date) -> any TimeDiffDescriptor {
+        let diffs = getDiffs(from: date)
+        return switch diffs {
+        case (1..., _, _, _, _, _): YearDescriptor(value: diffs.year)
+        case (_, 1..., _, _, _, _): MonthDescriptor(value: diffs.month)
+        case (_, _, 1..., _, _, _): DaysDescriptor(value: diffs.day)
+        case (_, _, _, 1..., _, _): HoursDescriptor(value: diffs.hour)
+        case (_, _, _, _, 1..., _): MinsDescriptor(value: diffs.minute)
+        default:                    SecsDescriptor()
         }
     }
     
     private func getDiffs(from date: Date) -> Diffs {
-        let components = cal.dateComponents(targetDateComponents, from: date)
-        let refComponents = cal.dateComponents(targetDateComponents, from: referenceDate)
-        
-
+        let diffComponents = Self.calendar.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date, to: referenceDate)
         return (
-            year: refComponents.year! - components.year!,
-            month: refComponents.month! - components.month!,
-            day: refComponents.day! - components.day!,
-            hour: refComponents.hour! - components.hour!,
-            minute: refComponents.minute! - components.minute!,
-            second: refComponents.second! - components.second!
+            year: diffComponents.year!,
+            month: diffComponents.month!,
+            day: diffComponents.day!,
+            hour: diffComponents.hour!,
+            minute: diffComponents.minute!,
+            second: diffComponents.second!
         )
     }
 }
@@ -130,7 +92,5 @@ struct MinsDescriptor: TimeDiffDescriptor {
 struct SecsDescriptor: TimeDiffDescriptor {
     static let single = "now"
     static let plural = "now"
-    var value = 1
-    
-    func description() -> String { Self.single }
+    var value: Int { 1 }
 }

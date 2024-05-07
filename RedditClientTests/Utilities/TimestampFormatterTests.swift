@@ -19,17 +19,23 @@ final class TimestampTests: XCTestCase {
         return result
     }
     
-    func test_human_readable_logic_for_timestamp() {
+    func test_human_readable_logic_for_seconds() {
         // Given
         let now = Date.now
         let timestamp = TimestampFormatter(referenceDate: now)
         
         // Then
-        // Check "now"
         for secs in 1...59 {
             XCTAssertEqual(timestamp(from: dateByAdding([.second: secs * -1], to: now)), "now")
         }
+    }
+    
+    func test_human_readable_logic_for_minutes() {
+        // Given
+        let now = Date.now
+        let timestamp = TimestampFormatter(referenceDate: now)
         
+        // Then
         // Check mins
         for mins in 1...59 {
             let minsAgo = dateByAdding([.minute: mins * -1], to: now)
@@ -39,7 +45,14 @@ final class TimestampTests: XCTestCase {
                 XCTAssertEqual(timestamp(from: minsAgo), "\(mins) mins ago")
             }
         }
+    }
+
+    func test_human_readable_logic_for_hours() {
+        // Given
+        let now = Date.now
+        let timestamp = TimestampFormatter(referenceDate: now)
         
+        // Then
         // Check hours
         for hrs in 1...23 {
             let hrsAgo = dateByAdding([.hour: hrs * -1], to: now)
@@ -49,8 +62,15 @@ final class TimestampTests: XCTestCase {
                 XCTAssertEqual(timestamp(from: hrsAgo), "\(hrs) hrs ago")
             }
         }
+    }
+
+    func test_human_readable_logic_for_days() {
+        // Given
+        let now = Date.now
+        let timestamp = TimestampFormatter(referenceDate: now)
         
-        // Check for days
+        // Then
+        // Check days
         for days in 1...28 {
             let daysAgo = dateByAdding([.day: days * -1], to: now)
             if days == 1 {
@@ -59,7 +79,14 @@ final class TimestampTests: XCTestCase {
                 XCTAssertEqual(timestamp(from: daysAgo), "\(days) days ago")
             }
         }
-
+    }
+    
+    func test_human_readable_logic_for_months() {
+        // Given
+        let now = Date.now
+        let timestamp = TimestampFormatter(referenceDate: now)
+        
+        // Then
         // Check for months
         for months in 1..<12 {
             let monthsAgo = dateByAdding([.month: months * -1], to: now)
@@ -69,7 +96,14 @@ final class TimestampTests: XCTestCase {
                 XCTAssertEqual(timestamp(from: monthsAgo), "\(months) months ago")
             }
         }
-
+    }
+    
+    func test_human_readable_logic_for_years() {
+        // Given
+        let now = Date.now
+        let timestamp = TimestampFormatter(referenceDate: now)
+        
+        // Then
         // Check for years
         for years in 1..<99 {
             let yearsAgo = dateByAdding([.year: years * -1], to: now)
