@@ -9,10 +9,21 @@ import SwiftUI
 
 @main
 struct RedditClientApp: App {
+    var isRunningTests: Bool {
+#if DEBUG
+        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+#else
+        false
+#endif
+    }
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .background(TranslucentVisualEffect().ignoresSafeArea())
+            if isRunningTests {
+                EmptyView()
+            } else {
+                ContentView()
+                    .background(TranslucentVisualEffect().ignoresSafeArea())
+            }
         }
         .windowStyle(.hiddenTitleBar)
     }

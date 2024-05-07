@@ -1,0 +1,44 @@
+{
+  "configurations" : [
+    {
+      "id" : "9DD4B910-9B3C-41B1-9340-8174649EE28F",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "IDEPreferLogStreaming",
+        "value" : "YES"
+      }
+    ],
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:RedditClient.xcodeproj",
+      "identifier" : "453337EC2BB366E000739815",
+      "name" : "RedditClient"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:RedditClient.xcodeproj",
+        "identifier" : "453337FD2BB366E200739815",
+        "name" : "RedditClientTests"
+      }
+    },
+    {
+      "enabled" : false,
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:RedditClient.xcodeproj",
+        "identifier" : "453338072BB366E200739815",
+        "name" : "RedditClientUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
