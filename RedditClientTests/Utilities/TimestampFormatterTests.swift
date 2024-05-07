@@ -106,7 +106,9 @@ final class TimestampTests: XCTestCase {
         // Then
         // Check for years
         for years in 1..<99 {
-            let yearsAgo = dateByAdding([.year: years * -1], to: now)
+            // Reducing one additional second to avoid variability at the time of running the tests.
+            // On occasions, depending on the time at which the test is ran, the diff between the reference date and the argument is 1 year minus 1 second.
+            let yearsAgo = dateByAdding([.year: years * -1, .second: -1], to: now)
             if years == 1 {
                 XCTAssertEqual(timestamp(from: yearsAgo), "last year")
             } else {
