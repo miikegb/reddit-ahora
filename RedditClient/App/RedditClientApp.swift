@@ -9,27 +9,30 @@ import SwiftUI
 
 @main
 struct RedditClientApp: App {
-    var isRunningTests: Bool {
-#if DEBUG
-        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
-#else
-        false
-#endif
-    }
+    var appEnvironment = AppEnvironment()
+    
     var body: some Scene {
         WindowGroup {
-            if isRunningTests {
-                EmptyView()
-            } else {
-                ContentView()
-                    .background(TranslucentVisualEffect().ignoresSafeArea())
-            }
+            WindowContent()
         }
+        .environment(\.runningEnvironment, appEnvironment.container)
+        #if os(macOS)
         .windowStyle(.hiddenTitleBar)
+        #endif
     }
 }
 
-struct TranslucentVisualEffect: NSViewRepresentable {
-    func makeNSView(context: Context) -> some NSView { NSVisualEffectView() }
-    func updateNSView(_ nsView: NSViewType, context: Context) { }
+struct WindowContent: View {
+    @Environment(\.runningEnvironment.runningTest) private var isRunningTest
+    
+    var body: some View {
+        if isRunningTest {
+            EmptyView()
+        } else {
+            ContentView()
+            #if os(macOS)
+                .background(TranslucentVisualEffect().ignoresSafeArea())
+            #endif
+        }
+    }
 }

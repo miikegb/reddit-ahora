@@ -10,7 +10,7 @@ import SwiftUI
 struct CachedAsyncImageView: View {
     var imageUrl: String
     private let cacheManager = ImageCacheManager()
-    @State private var image: NSImage?
+    @State private var image: PlatformImage?
     
     init(imageUrl: String) {
         self.imageUrl = imageUrl
@@ -20,7 +20,7 @@ struct CachedAsyncImageView: View {
     var body: some View {
         VStack {
             if let image {
-                Image(nsImage: image)
+                Image(platformImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
             } else {
@@ -36,3 +36,12 @@ struct CachedAsyncImageView: View {
     }
 }
 
+extension Image {
+    init(platformImage: PlatformImage) {
+        #if os(macOS)
+        self.init(nsImage: platformImage)
+        #else
+        self.init(uiImage: platformImage)
+        #endif
+    }
+}

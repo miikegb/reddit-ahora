@@ -22,7 +22,6 @@ struct ImageCache {
         get { cache[key] }
         set {
             cache[key] = newValue
-            print(cache)
         }
     }
 }
