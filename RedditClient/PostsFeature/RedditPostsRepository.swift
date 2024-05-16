@@ -8,14 +8,26 @@
 import Foundation
 import Combine
 
+typealias LinksPublisher = AnyPublisher<[Link], Error>
 protocol PostsRepository {
-    func getPosts(for subreddit: String) -> AnyPublisher<[Link], Error>
-    func getHomePosts() -> AnyPublisher<[Link], Error>
+    func getListing(for page: RedditPage) -> LinksPublisher
 }
 
 protocol ThingExtractor<Thing> {
     associatedtype Thing
     func callAsFunction(_ listing: Listing) -> Thing
+}
+
+enum RedditPage: Hashable {
+    case home
+    case subreddit(name: String)
+    
+    var stringify: String {
+        switch self {
+        case .home: ""
+        case let .subreddit(name: name): "/r/\(name)"
+        }
+    }
 }
 
 struct PostsExtractor: ThingExtractor {
@@ -26,25 +38,29 @@ struct PostsExtractor: ThingExtractor {
     }
 }
 
-struct RedditPostsRepository: PostsRepository {
+final class RedditPostsRepository: PostsRepository {
     private let networkFetcher: Fetcher
+    private var latestListings: [RedditPage: Listing] = [:]
     
     init(fetcher: Fetcher) {
         self.networkFetcher = fetcher
     }
     
-    func getHomePosts() -> AnyPublisher<[Link], Error> {
-        let resource = Resource(path: "", sort: .best, responseDecoder: .init(for: Listing.self))
-        return get(resource: resource, extractor: PostsExtractor())
-    }
-    
-    func getPosts(for subreddit: String) -> AnyPublisher<[Link], Error> {
-        let resource = Resource(path: "/r/\(subreddit)", responseDecoder: .init(for: Listing.self))
+    func getListing(for page: RedditPage) -> LinksPublisher {
+        let params: [String: String]? = if let afterPost = latestListings[page]?.after {
+            ["after": afterPost]
+        } else { nil }
+        
+        let resource = Resource(path: page.stringify, sort: .best, responseDecoder: .init(for: Listing.self), params: params)
         return get(resource: resource, extractor: PostsExtractor())
     }
     
     private func get<T>(resource: Resource<Listing>, extractor: some ThingExtractor<T>) -> AnyPublisher<T, Error> {
-        return networkFetcher.fetch(resource)
+        networkFetcher.fetch(resource)
+            .handleEvents(receiveOutput: { [weak self] listing in
+                self?.latestListings[.home] = listing
+            })
+            .eraseToAnyPublisher()
             .map { extractor($0) }
             .eraseToAnyPublisher()
     }
@@ -52,15 +68,7 @@ struct RedditPostsRepository: PostsRepository {
 
 #if DEBUG
 struct PreviewPostsRepository: PostsRepository {
-    func getPosts(for subreddit: String) -> AnyPublisher<[Link], any Error> {
-        getPreviewPosts()
-    }
-    
-    func getHomePosts() -> AnyPublisher<[Link], any Error> {
-        getPreviewPosts()
-    }
-    
-    private func getPreviewPosts() -> AnyPublisher<[Link], any Error> {
+    func getListing(for page: RedditPage) -> LinksPublisher {
         Just(SampleRedditPosts.previewPosts)
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()

@@ -14,8 +14,14 @@ struct MainPostsView: View {
         List {
             ForEach(viewModel.posts) { post in
                 PostItemView(post: post)
+                    .onAppear {
+                        if post == viewModel.posts.last {
+                            viewModel.loadMorePosts()
+                        }
+                    }
             }
         }
+        .animation(.easeIn, value: viewModel.posts)
         .padding(.horizontal)
     }
 }

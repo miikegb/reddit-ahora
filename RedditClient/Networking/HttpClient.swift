@@ -32,13 +32,15 @@ struct Resource<Response: Decodable> {
     var method: HttpMethod = .get
     var sort: SortResults = .hot
     var responseDecoder: ResponseDecoder<Response>
+    var params: [String: String]? = nil
 }
 
 extension Resource: Equatable {
     static func ==(_ lhs: Resource<Response>, _ rhs: Resource<Response>) -> Bool {
         lhs.path == rhs.path &&
         lhs.method == rhs.method &&
-        lhs.sort == rhs.sort
+        lhs.sort == rhs.sort &&
+        lhs.params == lhs.params
     }
 }
 
@@ -48,11 +50,18 @@ struct HttpClientConfiguration {
     var defaultHeaders: [String: String]? = nil
 }
 
+extension Dictionary where Key == String, Value == String {
+    var asQueryItems: [URLQueryItem]? {
+        map { URLQueryItem(name: $0.key, value: $0.value) }
+    }
+}
+
 extension URLRequest {
     init<T>(for resource: Resource<T>, baseUrl: URL, headers: [String: String]? = nil) {
         let resourceUrl = baseUrl
             .appendingPathComponent(resource.path)
             .appendingPathComponent(resource.sort.path)
+            .appending(queryItems: resource.params.flatMap(\.asQueryItems) ?? [])
         self.init(url: resourceUrl)
         httpMethod = resource.method.asString
         if let defaultHeaders = headers {

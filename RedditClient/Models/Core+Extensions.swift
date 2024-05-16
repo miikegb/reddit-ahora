@@ -18,3 +18,10 @@ extension Link {
     }
 }
 
+extension Listing {
+    var allLinks: [Link] {
+        children.compactMap { thing in
+            if case let .link(link) = thing { link } else { nil }
+        }
+    }
+}

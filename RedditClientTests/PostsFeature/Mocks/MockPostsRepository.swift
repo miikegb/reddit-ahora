@@ -27,24 +27,13 @@ final class MockPostsRepository: PostsRepository, Mock {
     func verifyExpectations(strict: Bool = true, file: StaticString = #file, line: UInt = #line) {
         recorder.verifyExpectations(strict: strict, file: file, line: line)
     }
-
-    func getPosts(for subreddit: String) -> AnyPublisher<[Link], any Error> {
-        let interaction: Props = .getPosts(subreddit: .exact(subreddit))
-        recorder.record(interaction: interaction)
-        do {
-            let returnResolver = StubResolver<MockPostsRepository, String, AnyPublisher<[Link], any Error>>(recorder: recorder, mock: self)
-            return try returnResolver.resolve(for: interaction) { $0(subreddit) }
-        } catch {
-            return recorder.resolveReturnValue(for: interaction)
-        }
-    }
     
-    func getHomePosts() -> AnyPublisher<[Link], any Error> {
-        let interaction: Props = .getHomePosts
+    func getListing(for page: RedditPage) -> LinksPublisher {
+        let interaction: Props = .getListing(for: .exact(page))
         recorder.record(interaction: interaction)
         do {
-            let returnResolver = StubResolver<MockPostsRepository, Void, AnyPublisher<[Link], any Error>>(recorder: recorder, mock: self)
-            return try returnResolver.resolve(for: interaction) { $0(()) }
+            let returnResolver = StubResolver<MockPostsRepository, RedditPage, LinksPublisher>(recorder: recorder, mock: self)
+            return try returnResolver.resolve(for: interaction) { $0(page) }
         } catch {
             return recorder.resolveReturnValue(for: interaction)
         }
@@ -52,14 +41,11 @@ final class MockPostsRepository: PostsRepository, Mock {
     
     // Step 1: Define protocol requirements in the Props enum
     enum Props: Matcheable {
-        case getPosts(subreddit: Matcher<String>)
-        case getHomePosts
+        case getListing(for: Matcher<RedditPage>)
         
         func matches(_ other: Props) -> Bool {
             switch (self, other) {
-            case let (.getPosts(subreddit: param1), .getPosts(subreddit: param2)): param1.matches(param2)
-            case (.getHomePosts, .getHomePosts): true
-            default: false
+            case let (.getListing(for: param1), .getListing(for: param2)): param1.matches(param2)
             }
         }
     }
@@ -71,12 +57,8 @@ final class MockPostsRepository: PostsRepository, Mock {
             self.recorder = recorder
         }
         
-        func getPosts(for subreddit: Matcher<String> = .any) -> StubBuilder<Self, String, AnyPublisher<[Link], any Error>> {
-            .init(recorder: recorder, member: .getPosts(subreddit: subreddit))
-        }
-        
-        func getHomePosts() -> StubBuilder<Self, Void, AnyPublisher<[Link], any Error>> {
-            .init(recorder: recorder, member: .getHomePosts)
+        func getListing(for page: Matcher<RedditPage> = .any) -> StubBuilder<Self, RedditPage, LinksPublisher> {
+            .init(recorder: recorder, member: .getListing(for: page))
         }
     }
     
@@ -87,12 +69,8 @@ final class MockPostsRepository: PostsRepository, Mock {
             self.recorder = recorder
         }
         
-        func getPosts(for subreddit: Matcher<String> = .any) -> VerifierBuilder<Self> {
-            .init(recorder: recorder, member: .getPosts(subreddit: subreddit))
-        }
-        
-        func getHomePosts() -> VerifierBuilder<Self> {
-            .init(recorder: recorder, member: .getHomePosts)
+        func getListing(for page: Matcher<RedditPage> = .any) -> VerifierBuilder<Self> {
+            .init(recorder: recorder, member: .getListing(for: page))
         }
     }
 }

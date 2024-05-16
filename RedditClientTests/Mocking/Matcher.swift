@@ -7,6 +7,18 @@
 
 import Foundation
 
+typealias MockComparatorKey<T> = (T, T) -> Bool
+
+// A type used to register Comparator functions for types that don't conform to the `Equatable` protocol
+struct MockerTypeComparators {
+    private static var other: [ObjectIdentifier: Any] = [:]
+    
+    static subscript<K>(key: K.Type) -> MockComparatorKey<K>? {
+        get { other[ObjectIdentifier(key)] as? MockComparatorKey<K> }
+        set { other[ObjectIdentifier(key)] = newValue }
+    }
+}
+
 enum Matcher<T> {
     case any
     case exact(T)
@@ -25,8 +37,10 @@ extension Matcher: Equatable where T: Equatable {
 extension Matcher: Matcheable {
     func matches(_ other: Matcher<T>) -> Bool {
         switch (self, other) {
-        case (.any, _), (_, .any): true
-        default: false
+        case (.any, _), (_, .any): return true
+        case let (.exact(arg1), .exact(arg2)):
+            guard let comparator = MockerTypeComparators[T.self] else { return false }
+            return comparator(arg1, arg2)
         }
     }
 }

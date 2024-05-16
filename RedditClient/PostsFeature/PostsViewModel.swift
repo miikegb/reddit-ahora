@@ -10,30 +10,35 @@ import Combine
 
 final class PostsViewModel: ObservableObject {
     @Published var posts = [Link]()
-    @Published var searchText = ""
     private var postsRepository: PostsRepository
     private var cancelBag = CancelBag()
-    private var scheduler: any Scheduler
+    private var fetchListingSubject = PassthroughSubject<RedditPage, Error>()
+    private var currentPage: RedditPage = .home
     
     init<S: Scheduler>(postsRepository: PostsRepository, scheduler: S = RunLoop.main) {
         self.postsRepository = postsRepository
-        self.scheduler = scheduler
         
-        postsRepository.getHomePosts()
+        setupListingPublisher()
             .replaceError(with: [])
             .receive(on: scheduler)
-            .assign(to: &$posts)
-        
-        $searchText
-            .filter { $0.count > 0 }
-            .removeDuplicates()
-            .debounce(for: .seconds(0.5), scheduler: scheduler)
-            .flatMap { term in
-                postsRepository.getPosts(for: term)
-                    .replaceError(with: [])
-                    .eraseToAnyPublisher()
+            .sink { [weak self] links in
+                self?.posts.append(contentsOf: links)
             }
-            .receive(on: scheduler)
-            .assign(to: &$posts)
+            .store(in: cancelBag)
+        
+        // Start fetching posts automatically
+        fetchListingSubject.send(currentPage)
+    }
+    
+    private func setupListingPublisher() -> LinksPublisher {
+        fetchListingSubject
+            .flatMap { [postsRepository] in
+                postsRepository.getListing(for: $0)
+            }
+            .eraseToAnyPublisher()
+    }
+    
+    func loadMorePosts() {
+        fetchListingSubject.send(currentPage)
     }
 }
