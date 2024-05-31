@@ -42,7 +42,7 @@ final class PostViewModel: ObservableObject, Identifiable, Equatable {
         guard icon == nil, let loadIconPublisher else { return }
         
         iconLoaderSubscription = loadIconPublisher
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] completion in
                 self?.iconLoaderSubscription = nil
             } receiveValue: { [weak self] image in
@@ -54,7 +54,7 @@ final class PostViewModel: ObservableObject, Identifiable, Equatable {
         guard image == nil, let loadPostImagePublisher else { return }
         
         postImageLoaderSubscription = loadPostImagePublisher
-            .receive(on: RunLoop.main)
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] completion in
                 self?.postImageLoaderSubscription = nil
             } receiveValue: { [weak self] image in
@@ -76,18 +76,14 @@ final class PostViewModel: ObservableObject, Identifiable, Equatable {
         if let postImage = imageCacheManager.getImage(with: post.url) {
             image = postImage
         } else {
-            loadPostImagePublisher = imageCacheManager.loadImage(with: post.url)
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
+            loadPostImagePublisher = loadImage(from: post.url)
         }
     }
     
     private func setupIconLoader() {
         if let subreddit = subredditRepository[post.subreddit] {
             if let iconImg = subreddit.iconImg {
-                loadIconPublisher = imageCacheManager.loadImage(with: iconImg)
-                    .setFailureType(to: Error.self)
-                    .eraseToAnyPublisher()
+                loadIconPublisher = loadImage(from: iconImg)
             } else {
                 // TODO: Handle this scenario
                 fatalError("Need to handle this scenario...")
@@ -95,13 +91,14 @@ final class PostViewModel: ObservableObject, Identifiable, Equatable {
         } else {
             loadIconPublisher = subredditRepository.fetchSubredditAbout(post.subreddit)
                 .compactMap { $0.iconImg }
-                .flatMap { [imageCacheManager] iconImg in
-                    imageCacheManager.loadImage(with: iconImg)
-                        .handleEvents(receiveCompletion: { [weak self] completion in
-                            print("Completed loading image for \(String(describing: self?.post.subreddit)), url: \(iconImg)")
-                        })
-                }
+                .flatMap(loadImage)
                 .eraseToAnyPublisher()
         }
+    }
+    
+    private func loadImage(from imageUrl: String) -> AnyPublisher<PlatformImage, Error> {
+        imageCacheManager.loadImage(with: imageUrl)
+                    .setFailureType(to: Error.self)
+                    .eraseToAnyPublisher()
     }
 }

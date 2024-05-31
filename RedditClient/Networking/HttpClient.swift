@@ -130,7 +130,6 @@ struct SimpleImageFetcher {
         return URLSession.shared.dataTaskPublisher(for: imageUrl)
             .mapError { _ in HTTPError.unableToLoadImage }
             .map { data, _ in data }
-            .receive(on: RunLoop.main)
             .eraseToAnyPublisher()
     }
 }
