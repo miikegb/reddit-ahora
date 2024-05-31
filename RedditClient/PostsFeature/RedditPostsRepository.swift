@@ -13,14 +13,30 @@ protocol PostsRepository {
     func getListing(for page: RedditPage) -> LinksPublisher
 }
 
-protocol ThingExtractor<Thing> {
-    associatedtype Thing
-    func callAsFunction(_ listing: Listing) -> Thing
+enum ThingExtractorError: Error {
+    case unableToExtractThing
 }
 
-enum RedditPage: Hashable {
+protocol ThingExtractor<Input, Output> {
+    associatedtype Output
+    associatedtype Input
+    func callAsFunction(_ input: Input) throws -> Output
+}
+
+enum RedditPage: Codable, Identifiable, Hashable {
     case home
     case subreddit(name: String)
+    
+    var id: String {
+        stringify
+    }
+    
+    var title: String {
+        switch self {
+        case .home: "Home"
+        case let .subreddit(name: name): "r/\(name)"
+        }
+    }
     
     var stringify: String {
         switch self {
@@ -33,7 +49,7 @@ enum RedditPage: Hashable {
 struct PostsExtractor: ThingExtractor {
     func callAsFunction(_ listing: Listing) -> [Link] {
         return listing.children.compactMap { thing in
-            if case let .link(link) = thing { link } else { nil }
+            thing.associatedValue as? Link
         }
     }
 }
@@ -41,33 +57,53 @@ struct PostsExtractor: ThingExtractor {
 final class RedditPostsRepository: PostsRepository {
     private let networkFetcher: Fetcher
     private var latestListings: [RedditPage: Listing] = [:]
+    private var cancelBag = CancelBag()
+    
+    private var defaultRequestParams = [
+        "raw_json": "1"
+    ]
     
     init(fetcher: Fetcher) {
         self.networkFetcher = fetcher
     }
     
-    func getListing(for page: RedditPage) -> LinksPublisher {
-        let params: [String: String]? = if let afterPost = latestListings[page]?.after {
+    private func listingPath(for page: RedditPage, sorting: SortResults = .best) -> String {
+        "\(page.stringify)/\(sorting.path)"
+    }
+    
+    private func listingParams(for page: RedditPage) -> [String: String] {
+        let afterParams: [String: String]? = if let afterPost = latestListings[page]?.after {
             ["after": afterPost]
         } else { nil }
         
-        let resource = Resource(path: page.stringify, sort: .best, responseDecoder: .init(for: Listing.self), params: params)
-        return get(resource: resource, extractor: PostsExtractor())
+        return defaultRequestParams.merging(afterParams ?? [:]) { current, _ in current }
     }
     
-    private func get<T>(resource: Resource<Listing>, extractor: some ThingExtractor<T>) -> AnyPublisher<T, Error> {
+    func getListing(for page: RedditPage) -> LinksPublisher {
+        let resource = Resource(path: listingPath(for: page), params: listingParams(for: page), responseDecoder: .init(for: Listing.self))
+        return getListing(resource: resource, extractor: PostsExtractor())
+    }
+    
+    private func getListing<T>(resource: Resource<Listing>, extractor: some ThingExtractor<Listing, T>) -> AnyPublisher<T, Error> {
         networkFetcher.fetch(resource)
             .handleEvents(receiveOutput: { [weak self] listing in
                 self?.latestListings[.home] = listing
             })
+            .tryMap { try extractor($0) }
             .eraseToAnyPublisher()
-            .map { extractor($0) }
+    }
+    
+    private func getThing<T>(resource: Resource<Thing>, extractor: some ThingExtractor<Thing, T>) -> AnyPublisher<T, Error> {
+        networkFetcher.fetch(resource)
+            .tryMap { try extractor($0) }
             .eraseToAnyPublisher()
     }
 }
 
 #if DEBUG
 struct PreviewPostsRepository: PostsRepository {
+    private let sampleSubreddit: Thing = try! FixturesLoader.load(json: "PreviewAboutiOSSub")
+    
     func getListing(for page: RedditPage) -> LinksPublisher {
         Just(SampleRedditPosts.previewPosts)
             .setFailureType(to: Error.self)

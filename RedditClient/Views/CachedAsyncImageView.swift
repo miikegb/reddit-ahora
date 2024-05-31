@@ -7,31 +7,18 @@
 
 import SwiftUI
 
-struct CachedAsyncImageView: View {
-    var imageUrl: String
-    private let cacheManager = ImageCacheManager()
-    @State private var image: PlatformImage?
-    
-    init(imageUrl: String) {
-        self.imageUrl = imageUrl
-        self.image = cacheManager.getImage(with: imageUrl)
-    }
+struct LazyImageView<Placeholder: View>: View {
+    @Binding var image: PlatformImage?
+    @ViewBuilder var placeholder: Placeholder
+    var contentMode: ContentMode = .fit
     
     var body: some View {
-        VStack {
-            if let image {
-                Image(platformImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-            } else {
-                EmptyView()
-            }
-        }
-        .frame(height: 500)
-        .onReceive(cacheManager.loadImage(with: imageUrl)) { platformImage in
-            if image == nil {
-                image = platformImage
-            }
+        if let image {
+            Image(platformImage: image)
+                .resizable()
+                .aspectRatio(contentMode: contentMode)
+        } else {
+            placeholder
         }
     }
 }

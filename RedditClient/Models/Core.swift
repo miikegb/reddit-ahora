@@ -28,7 +28,7 @@ enum Thing: Decodable {
     case account
     case link(Link)
     case message
-    case subreddit
+    case subreddit(Subreddit)
     case award
     case more(More)
     var `prefix`: String {
@@ -42,8 +42,17 @@ enum Thing: Decodable {
         case .more: "more"
         }
     }
+    var associatedValue: (any CommonThing)? {
+        switch self {
+        case let .comment(comment): comment
+        case let .link(link): link
+        case let .subreddit(subreddit): subreddit
+        case let .more(more): more
+        default: nil
+        }
+    }
     
-    enum CodingKeys: CodingKey {
+    private enum CodingKeys: CodingKey {
         case kind
         case data
     }
@@ -54,6 +63,7 @@ enum Thing: Decodable {
         self = switch kind {
         case "t1": .comment(try container.decode(Comment.self, forKey: .data))
         case "t3": .link(try container.decode(Link.self, forKey: .data))
+        case "t5": .subreddit(try container.decode(Subreddit.self, forKey: .data))
         case "more": .more(try container.decode(More.self, forKey: .data))
         default: throw DecodingError.typeMismatch(Thing.self, DecodingError.Context.init(codingPath: [CodingKeys.kind], debugDescription: "Trying to decode an unknown thing, please make sure it is a recognized kind of thing."))
         }
@@ -91,7 +101,9 @@ struct Listing: Decodable {
     }
 }
 
-struct Comment:  Decodable {
+struct Comment: CommonThing, Decodable {
+    var id: String
+    var name: String
     var author: String
     var body: String
     var likes: Bool?
@@ -105,6 +117,8 @@ struct Comment:  Decodable {
     var replies: Listing?
     
     enum CodingKeys: CodingKey {
+        case id
+        case name
         case author
         case body
         case likes
@@ -120,6 +134,8 @@ struct Comment:  Decodable {
     
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.name = try container.decode(String.self, forKey: .name)
         self.author = try container.decode(String.self, forKey: .author)
         self.body = try container.decode(String.self, forKey: .body)
         self.likes = try container.decodeIfPresent(Bool.self, forKey: .likes)
@@ -134,7 +150,24 @@ struct Comment:  Decodable {
     }
 }
 
-struct Link: CommonThing, Votable, Created, Decodable, Equatable, Identifiable {
+struct ImageMetadata: Decodable {
+    var url: URL
+    var width: Int
+    var height: Int
+}
+
+struct ImagePreview: Decodable {
+    var id: String
+    var source: ImageMetadata
+    var resolutions: [ImageMetadata]
+}
+
+struct LinkPreview: Decodable {
+    var images: [ImagePreview]
+    var enabled: Bool
+}
+
+struct Link: CommonThing, Votable, Created, Decodable, Identifiable, Equatable {
     var id: String
     var name: String
     var author: String
@@ -154,6 +187,37 @@ struct Link: CommonThing, Votable, Created, Decodable, Equatable, Identifiable {
     var url: String
     var urlOverridenByDest: String?
     var contentCategories: [String]?
+    var preview: LinkPreview?
+    
+    static func ==(_ lhs: Link, _ rhs: Link) -> Bool {
+        lhs.id == rhs.id &&
+        lhs.name == rhs.name &&
+        lhs.author == rhs.author &&
+        lhs.title == rhs.title &&
+        lhs.created == rhs.created &&
+        lhs.subreddit == rhs.subreddit
+    }
+}
+
+struct Subreddit: CommonThing, Decodable, Equatable {
+    var id: String
+    var name: String
+    var title: String
+    var description: String
+    var headerTitle: String
+    var headerImg: String?
+    var bannerImg: String?
+    var bannerSize: [Int]?
+    var mobileBannerImage: String?
+    var headerSize: [Int]?
+    var iconImg: String?
+    var iconSize: [Int]?
+    var primaryColor: String
+    var activeUserCount: Int
+    var accountsActive: Int
+    var subscribers: Int
+    var publicDescription: String
+    var created: Date
 }
 
 struct More: CommonThing, Decodable, Equatable {

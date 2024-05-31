@@ -25,21 +25,22 @@ enum SortResults: String, Equatable {
     var path: String {
         "\(rawValue).json"
     }
+    var asQueryParam: [String: String] {
+        ["sort": path]
+    }
 }
 
 struct Resource<Response: Decodable> {
     var path: String
     var method: HttpMethod = .get
-    var sort: SortResults = .hot
-    var responseDecoder: ResponseDecoder<Response>
     var params: [String: String]? = nil
+    var responseDecoder: ResponseDecoder<Response>
 }
 
 extension Resource: Equatable {
     static func ==(_ lhs: Resource<Response>, _ rhs: Resource<Response>) -> Bool {
         lhs.path == rhs.path &&
         lhs.method == rhs.method &&
-        lhs.sort == rhs.sort &&
         lhs.params == lhs.params
     }
 }
@@ -60,8 +61,7 @@ extension URLRequest {
     init<T>(for resource: Resource<T>, baseUrl: URL, headers: [String: String]? = nil) {
         let resourceUrl = baseUrl
             .appendingPathComponent(resource.path)
-            .appendingPathComponent(resource.sort.path)
-            .appending(queryItems: resource.params.flatMap(\.asQueryItems) ?? [])
+            .appending(params: resource.params)
         self.init(url: resourceUrl)
         httpMethod = resource.method.asString
         if let defaultHeaders = headers {
@@ -69,6 +69,14 @@ extension URLRequest {
                 setValue(value, forHTTPHeaderField: key)
             }
         }
+    }
+    
+}
+
+extension URL {
+    func appending(params: [String: String]?) -> Self {
+        guard let params, !params.isEmpty else { return self }
+        return appending(queryItems: params.asQueryItems ?? [])
     }
 }
 

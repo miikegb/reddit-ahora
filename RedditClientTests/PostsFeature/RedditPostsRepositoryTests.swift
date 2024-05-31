@@ -20,7 +20,10 @@ final class RedditPostsRepositoryTests: XCTestCase {
         let publisher = PassthroughSubject<Listing, Error>()
         let sampleListing: Listing = try TestFixturesLoader.load(json: "sampleListing")
         let repo = RedditPostsRepository(fetcher: mockFetcher)
-        let expectedResource = Resource(path: "", sort: .best, responseDecoder: .init(for: Listing.self))
+        let homePage: RedditPage = .home
+        let defaultSort: SortResults = .best
+        let expectedParams = ["raw_json": "1"]
+        let expectedResource = Resource(path: "\(homePage.stringify)/\(defaultSort.path)", params: expectedParams, responseDecoder: .init(for: Listing.self))
         var homePosts = [Link]()
         
         stub(mockFetcher).fetch(.any)

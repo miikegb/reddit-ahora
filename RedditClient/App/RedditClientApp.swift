@@ -9,13 +9,15 @@ import SwiftUI
 
 @main
 struct RedditClientApp: App {
-    var appEnvironment = AppEnvironment()
+    var appEnvironment = AppEnvironment.bootstrap()
     
     var body: some Scene {
         WindowGroup {
             WindowContent()
         }
         .environment(\.runningEnvironment, appEnvironment.container)
+        .environment(\.dependencies, appEnvironment.dependencies)
+        .environmentObject(NavigationModel())
         #if os(macOS)
         .windowStyle(.hiddenTitleBar)
         #endif

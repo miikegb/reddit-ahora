@@ -11,20 +11,21 @@ import Combine
 
 final class PostsViewModelTests: XCTestCase {
     
-    private func setUpViewModel() -> (PassthroughSubject<[Link], Error>, MockPostsRepository, PostsViewModel) {
+    private func setUpViewModel() -> (PassthroughSubject<[Link], Error>, MockPostsRepository, RedditPageViewModel) {
         let postsSubject = PassthroughSubject<[Link], Error>()
         let mockRepo = MockPostsRepository()
-        let vm = PostsViewModel(postsRepository: mockRepo, scheduler: ImmediateScheduler.shared)
+        let mockSubredditRepo = MockSubredditRepository()
+        let vm = RedditPageViewModel(postsRepository: mockRepo, subredditRepository: mockSubredditRepo, scheduler: ImmediateScheduler.shared)
         return (postsSubject, mockRepo, vm)
     }
     
     func test_posts_come_from_home_page() throws {
         // Given
-        let postsSubject = PassthroughSubject<[Link], Error>()
         let mockRepo = MockPostsRepository()
+        let mockSubredditRepo = MockSubredditRepository()
         let sampleListing: Listing = try TestFixturesLoader.load(json: "sampleListing")
         let sampleListing2: Listing = try TestFixturesLoader.load(json: "sampleListing2")
-        
+
         expect(mockRepo)
             .getListing(for: .exact(.home)).toBeCalled(.count(2))
         
@@ -35,19 +36,21 @@ final class PostsViewModelTests: XCTestCase {
                 return CurrentValueSubject<[Link], Error>(callNumber == 1 ? sampleListing.allLinks : sampleListing2.allLinks)
                     .eraseToAnyPublisher()
             }
+        
+        let listing1ViewModels = sampleListing.allLinks.map { PostViewModel(post: $0, subredditRepository: mockSubredditRepo) }
+        let listing2ViewModels = sampleListing2.allLinks.map { PostViewModel(post: $0, subredditRepository: mockSubredditRepo) }
 
         // When
-        let vm = PostsViewModel(postsRepository: mockRepo, scheduler: ImmediateScheduler.shared)
-        postsSubject.send(sampleListing.allLinks)
+        let vm = RedditPageViewModel(postsRepository: mockRepo, subredditRepository: mockSubredditRepo, scheduler: ImmediateScheduler.shared)
         
         // Then
-        XCTAssertEqual(vm.posts, sampleListing.allLinks)
+        XCTAssertEqual(vm.postsViewModels, listing1ViewModels)
         
         // When
         vm.loadMorePosts()
         
         // Then
-        XCTAssertEqual(vm.posts, sampleListing.allLinks + sampleListing2.allLinks)
+        XCTAssertEqual(vm.postsViewModels, listing1ViewModels + listing2ViewModels)
         verify(mockRepo)
     }
     
@@ -55,6 +58,7 @@ final class PostsViewModelTests: XCTestCase {
     func pending_test_calling_loadMorePosts_multiple_times_doesnt_trigger_duplicate_requests() throws {
         // Given
         let mockRepo = MockPostsRepository()
+        let mockSubredditRepo = MockSubredditRepository()
         let sampleListing: Listing = try TestFixturesLoader.load(json: "sampleListing")
         let sampleListing2: Listing = try TestFixturesLoader.load(json: "sampleListing2")
         let postsSubject = CurrentValueSubject<[Link], Error>(sampleListing.allLinks)
@@ -67,16 +71,20 @@ final class PostsViewModelTests: XCTestCase {
         expect(mockRepo)
             .getListing(for: .exact(.home)).toBeCalled(.once)
         
+        let listing1 = sampleListing.allLinks.map { PostViewModel(post: $0, subredditRepository: mockSubredditRepo) }
+        let listing2 = sampleListing2.allLinks.map { PostViewModel(post: $0, subredditRepository: mockSubredditRepo) }
+
         // When
-        let vm = PostsViewModel(postsRepository: mockRepo, scheduler: ImmediateScheduler.shared)
+        let vm = RedditPageViewModel(postsRepository: mockRepo, subredditRepository: mockSubredditRepo, scheduler: ImmediateScheduler.shared)
         vm.loadMorePosts()
         vm.loadMorePosts()
         vm.loadMorePosts()
         vm.loadMorePosts()
         vm.loadMorePosts()
         
+        
         // Then
-        XCTAssertEqual(vm.posts, sampleListing.allLinks + sampleListing2.allLinks)
+        XCTAssertEqual(vm.postsViewModels, listing1 + listing2)
         verify(mockRepo)
     }
     
@@ -85,10 +93,12 @@ final class PostsViewModelTests: XCTestCase {
         enum TestError: Error {
             case repoError
         }
-        let link: Link = try TestFixturesLoader.load(json: "sampleLink")
-        let mockLinks = [link]
         let postsSubject = PassthroughSubject<[Link], Error>()
         let mockRepo = MockPostsRepository()
+        let mockSubredditRepo = MockSubredditRepository()
+        let link: Link = try TestFixturesLoader.load(json: "sampleLink")
+        let mockLinks = [PostViewModel(post: link, subredditRepository: mockSubredditRepo)]
+
         stub(mockRepo)
             .getListing(for: .exact(.home))
             .andReturn(postsSubject.eraseToAnyPublisher())
@@ -97,20 +107,22 @@ final class PostsViewModelTests: XCTestCase {
             .getListing(for: .exact(.home)).toBeCalled()
 
         // When
-        let vm = PostsViewModel(postsRepository: mockRepo, scheduler: ImmediateScheduler.shared)
-        vm.posts = mockLinks
+        let vm = RedditPageViewModel(postsRepository: mockRepo, subredditRepository: mockSubredditRepo, scheduler: ImmediateScheduler.shared)
+        vm.postsViewModels = mockLinks
         postsSubject.send(completion: .failure(TestError.repoError))
 
         // Then
         verify(mockRepo)
-        XCTAssertEqual(vm.posts, mockLinks)
+        XCTAssertEqual(vm.postsViewModels, mockLinks)
     }
     
     func test_home_posts_are_fetched_upon_initialization() throws {
         // Given
         let postsSubject = PassthroughSubject<[Link], Error>()
         let mockRepo = MockPostsRepository()
+        let mockSubredditRepo = MockSubredditRepository()
         let sampleListing: Listing = try TestFixturesLoader.load(json: "sampleListing")
+        let expectedViewModels = sampleListing.allLinks.map { PostViewModel(post: $0, subredditRepository: mockSubredditRepo) }
         
         stub(mockRepo)
             .getListing(for: .exact(.home))
@@ -121,11 +133,11 @@ final class PostsViewModelTests: XCTestCase {
             .toBeCalled()
 
         // When
-        let vm = PostsViewModel(postsRepository: mockRepo, scheduler: ImmediateScheduler.shared)
+        let vm = RedditPageViewModel(postsRepository: mockRepo, subredditRepository: mockSubredditRepo, scheduler: ImmediateScheduler.shared)
         postsSubject.send(sampleListing.allLinks)
         
         // Then
-        XCTAssertEqual(vm.posts.count, sampleListing.allLinks.count)
+        XCTAssertEqual(vm.postsViewModels, expectedViewModels)
         verify(mockRepo)
     }
 }
