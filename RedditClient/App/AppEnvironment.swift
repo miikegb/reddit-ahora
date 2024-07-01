@@ -19,10 +19,16 @@ struct AppEnvironment {
     
     private static func createDependencyGraph() -> Dependencies {
         let fetcher = HttpClient(config: .default)
-        let postViewModel = RedditPageViewModel(postsRepository: RedditPostsRepository(fetcher: fetcher),
-                                           subredditRepository: ProdSubredditRepository(networkFetcher: fetcher))
         let subredditRepository = ProdSubredditRepository(networkFetcher: fetcher)
-        return Dependencies(postsViewModel: postViewModel, subredditRepository: subredditRepository)
+        let commentsRepository = ProdPostCommentsRepository(networkFetcher: fetcher)
+        let postsRepository = RedditPostsRepository(fetcher: fetcher)
+        let redditorRepository = ProdRedditorRepository(networkFetcher: fetcher)
+        let postViewModel = RedditPageViewModel(postsRepository: postsRepository,
+                                                subredditRepository: subredditRepository,
+                                                commentsRepository: commentsRepository,
+                                                redditorRepository: redditorRepository)
+        
+        return Dependencies(postsViewModel: postViewModel, subredditRepository: subredditRepository, commentsRepository: commentsRepository)
     }
 }
 
@@ -71,23 +77,47 @@ extension EnvironmentValues {
 struct Dependencies: EnvironmentKey {
     var postsViewModel: RedditPageViewModel
     var subredditRepository: SubredditRepository
+    var commentsRepository: PostCommentsRepository
     
-    init(postsViewModel: RedditPageViewModel, subredditRepository: SubredditRepository) {
+    init(postsViewModel: RedditPageViewModel, subredditRepository: SubredditRepository, commentsRepository: PostCommentsRepository) {
         self.postsViewModel = postsViewModel
         self.subredditRepository = subredditRepository
+        self.commentsRepository = commentsRepository
     }
     
-    static var defaultValue = Dependencies(postsViewModel: .preview, subredditRepository: .preview)
+    static var defaultValue = Dependencies(
+        postsViewModel: .preview,
+        subredditRepository: .preview,
+        commentsRepository: .preview
+    )
 }
 
 extension RedditPageViewModel {
     static var preview: RedditPageViewModel {
-        RedditPageViewModel(postsRepository: PreviewPostsRepository(), subredditRepository: PreviewSubredditRepository())
+        RedditPageViewModel(postsRepository: .preview, subredditRepository: .preview, commentsRepository: .preview, redditorRepository: .preview)
+    }
+}
+
+extension PostsRepository where Self == PreviewPostsRepository {
+    static var preview: PreviewPostsRepository {
+        PreviewPostsRepository()
     }
 }
 
 extension SubredditRepository where Self == PreviewSubredditRepository {
     static var preview: PreviewSubredditRepository {
         PreviewSubredditRepository()
+    }
+}
+
+extension PostCommentsRepository where Self == PreviewPostCommentsRepository {
+    static var preview: PreviewPostCommentsRepository {
+        PreviewPostCommentsRepository()
+    }
+}
+
+extension RedditorRepository where Self == PreviewRedditorRepository {
+    static var preview: PreviewRedditorRepository {
+        PreviewRedditorRepository()
     }
 }

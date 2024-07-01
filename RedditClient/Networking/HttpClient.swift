@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import OSLog
 
 enum HttpMethod: Equatable {
     case get
@@ -99,9 +100,11 @@ final class HttpClient: Fetcher {
     private let config: HttpClientConfiguration
     private var urlSession: URLSessionProvider { config.session }
     private var baseUrl: URL { config.baseUrl }
+    private var logger: Logger
     
     init(config: HttpClientConfiguration) {
         self.config = config
+        self.logger = Logger(subsystem: "Networking", category: "HttpClient")
     }
     
     func fetch<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error> {
@@ -109,6 +112,18 @@ final class HttpClient: Fetcher {
             .tryMap { data, _ in
                 try resource.responseDecoder(data)
             }
+            .handleEvents(
+                receiveCompletion: { [logger] completion in
+                    if case let .failure(error) = completion {
+                        logger.error("[HTTPClient:\(#function)] Failed loading \(resource.path) with error: \(error.localizedDescription)")
+                    } else {
+                        logger.info("[HTTPClient:\(#function)] Completed loading \(resource.path)")
+                    }
+                },
+                receiveCancel: { [logger] in
+                    logger.warning("[HTTPClient:\(#function)] Cancelled loading \(resource.path)")
+                }
+            )
             .eraseToAnyPublisher()
     }
 }
@@ -125,9 +140,23 @@ enum HTTPError: Error {
 }
 
 struct SimpleImageFetcher {
+    private let logger = Logger(subsystem: "Networking", category: "SimpleImageFetcher")
+    
     func fetchImage(from url: String) -> AnyPublisher<Data, Error> {
         guard let imageUrl = URL(string: url) else { return Fail(error: HTTPError.invalidUrlFormat).eraseToAnyPublisher() }
         return URLSession.shared.dataTaskPublisher(for: imageUrl)
+            .handleEvents(
+                receiveCompletion: { [logger] completion in
+                    if case let .failure(error) = completion {
+                        logger.error("[SimpleImageFetcher:\(#function)] Failed loading \(url) with error: \(error.localizedDescription)")
+                    } else {
+                        logger.info("[SimpleImageFetcher:\(#function)] Completed loading \(url)")
+                    }
+                },
+                receiveCancel: { [logger] in
+                    logger.warning("[SimpleImageFetcher:\(#function)] Cancelled loading \(url)")
+                }
+            )
             .mapError { _ in HTTPError.unableToLoadImage }
             .map { data, _ in data }
             .eraseToAnyPublisher()

@@ -25,7 +25,7 @@ protocol CommonThing {
 
 enum Thing: Decodable {
     case comment(Comment)
-    case account
+    case account(Redditor)
     case link(Link)
     case message
     case subreddit(Subreddit)
@@ -45,10 +45,12 @@ enum Thing: Decodable {
     var associatedValue: (any CommonThing)? {
         switch self {
         case let .comment(comment): comment
+        case let .account(redditor): redditor
         case let .link(link): link
         case let .subreddit(subreddit): subreddit
         case let .more(more): more
-        default: nil
+        case .message: nil
+        case .award: nil
         }
     }
     
@@ -62,6 +64,7 @@ enum Thing: Decodable {
         let kind = try container.decode(String.self, forKey: .kind)
         self = switch kind {
         case "t1": .comment(try container.decode(Comment.self, forKey: .data))
+        case "t2": .account(try container.decode(Redditor.self, forKey: .data))
         case "t3": .link(try container.decode(Link.self, forKey: .data))
         case "t5": .subreddit(try container.decode(Subreddit.self, forKey: .data))
         case "more": .more(try container.decode(More.self, forKey: .data))
@@ -106,6 +109,7 @@ struct Comment: CommonThing, Decodable {
     var name: String
     var author: String
     var body: String
+    var created: Date
     var likes: Bool?
     var subredditId: String
     var authorFlairTxt: String?
@@ -121,6 +125,7 @@ struct Comment: CommonThing, Decodable {
         case name
         case author
         case body
+        case created
         case likes
         case subredditId
         case authorFlairTxt
@@ -138,6 +143,7 @@ struct Comment: CommonThing, Decodable {
         self.name = try container.decode(String.self, forKey: .name)
         self.author = try container.decode(String.self, forKey: .author)
         self.body = try container.decode(String.self, forKey: .body)
+        self.created = try container.decode(Date.self, forKey: .created)
         self.likes = try container.decodeIfPresent(Bool.self, forKey: .likes)
         self.subredditId = try container.decode(String.self, forKey: .subredditId)
         self.authorFlairTxt = try container.decodeIfPresent(String.self, forKey: .authorFlairTxt)
@@ -148,6 +154,17 @@ struct Comment: CommonThing, Decodable {
         self.parentId = try container.decode(String.self, forKey: .parentId)
         self.replies = try? container.decodeIfPresent(Listing.self, forKey: .replies)
     }
+}
+
+struct Redditor: CommonThing, Decodable {
+    var id: String
+    var name: String
+    var created: Date
+    var iconImg: String
+    var snoovatarImg: String
+    var totalKarma: Int
+    var commentKarma: Int
+    var linkKarma: Int
 }
 
 struct ImageMetadata: Decodable {

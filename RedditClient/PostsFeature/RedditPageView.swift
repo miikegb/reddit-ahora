@@ -29,15 +29,29 @@ struct RedditPageView: View {
         }
         .listStyle(.plain)
         .sheet(item: $selectedViewModel) { post in
-            PostDetails(viewModel: post)
+            PostDetailsView(viewModel: post)
         }
         .animation(.default, value: viewModel.postsViewModels)
     }
 }
 
+struct TimestampView: View {
+    var timestamp: String
+    
+    var body: some View {
+        HStack(spacing: 5) {
+            Text("•")
+                .bold()
+            Text(timestamp)
+        }
+        .font(.footnote)
+        .foregroundStyle(.secondary)
+    }
+}
+
 struct PostHeader: View {
     @ObservedObject var viewModel: PostViewModel
-    private let timestampFormatter = TimestampFormatter()
+    var showRedditor = false
 
     var body: some View {
         HStack {
@@ -49,29 +63,23 @@ struct PostHeader: View {
             .clipShape(Circle())
             .overlay(.red, in: Circle().stroke(style: StrokeStyle(lineWidth: 2)))
             
-            VStack(alignment: .leading) {
-                Text("r/\(viewModel.subreddit)")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.accentColor)
-                Text(timestampFormatter(from: viewModel.created))
-                    .font(.footnote)
+            HStack(alignment: .lastTextBaseline) {
+                VStack(alignment: .leading) {
+                    Text("r/\(viewModel.subreddit)")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.accentColor)
+                    if showRedditor {
+                        Text("u/\(viewModel.author)")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                TimestampView(timestamp: viewModel.postedDateString)
             }
         }
         .onAppear {
             viewModel.loadIconIfNeeded()
         }
-    }
-}
-
-struct PostDetails: View {
-    var viewModel: PostViewModel
-    
-    var body: some View {
-        VStack {
-            PostContentView(viewModel: viewModel, showActions: false)
-            Spacer()
-        }
-        .padding()
     }
 }
 
@@ -167,16 +175,6 @@ struct PhotoContentView: View {
     }
 }
 
-extension Link {
-    var imageSize: CGSize? {
-        if let firstPreview = preview?.images.first {
-            CGSize(width: firstPreview.source.width, height: firstPreview.source.height)
-        } else {
-            nil
-        }
-    }
-}
-
 struct PostContentView: View {
     var viewModel: PostViewModel
     var showActions = true
@@ -185,10 +183,10 @@ struct PostContentView: View {
         VStack(alignment: .leading, spacing: 8.0) {
             PostHeader(viewModel: viewModel)
             
-            MarkdownText(styled: viewModel.styledTitle, fallback: viewModel.title)
+            Text(viewModel.attributedTitle)
                 .font(.title3.bold())
             
-            MarkdownText(styled: viewModel.styledText, fallback: viewModel.selftext)
+            Text(viewModel.attributedBody)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .lineLimit(10)
@@ -240,18 +238,10 @@ struct PostItemView: View {
     }
 }
 
-struct MarkdownText: View {
-    var styled: AttributedString?
-    var fallback: String
-    var body: some View {
-        if let styledText = styled {
-            Text(styledText)
-        } else {
-            Text(fallback)
-        }
-    }
-}
-
 #Preview {
-    RedditPageView(viewModel: RedditPageViewModel(postsRepository: PreviewPostsRepository(), subredditRepository: PreviewSubredditRepository()))
+    RedditPageView(viewModel:
+                    RedditPageViewModel(
+                        postsRepository: .preview, subredditRepository: .preview, commentsRepository: .preview, redditorRepository: .preview
+                    )
+    )
 }

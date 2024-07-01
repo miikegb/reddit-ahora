@@ -115,7 +115,9 @@ struct HamburgerButtonView: View {
         }
         .listStyle(.plain)
     } content: {
-        RedditPageView(viewModel: RedditPageViewModel(postsRepository: PreviewPostsRepository(),
-                                                subredditRepository: PreviewSubredditRepository()))
+        RedditPageView(viewModel: RedditPageViewModel(postsRepository: .preview,
+                                                      subredditRepository: .preview,
+                                                      commentsRepository: .preview,
+                                                      redditorRepository: .preview))
     }
 }

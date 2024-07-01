@@ -18,7 +18,11 @@ final class RedditPageViewModel: ObservableObject {
     private var postsIds: Set<String> = []
     private var subredditRepository: SubredditRepository
     
-    init<S: Scheduler>(postsRepository: PostsRepository, subredditRepository: SubredditRepository, scheduler: S = RunLoop.main) {
+    init<S: Scheduler>(postsRepository: PostsRepository,
+                       subredditRepository: SubredditRepository,
+                       commentsRepository: PostCommentsRepository,
+                       redditorRepository: RedditorRepository,
+                       scheduler: S = DispatchQueue.main) {
         self.postsRepository = postsRepository
         self.subredditRepository = subredditRepository
         
@@ -31,7 +35,7 @@ final class RedditPageViewModel: ObservableObject {
             }
             .receive(on: scheduler)
             .sink { [weak self] (links: [Link]) -> Void in
-                let vms = links.map { PostViewModel(post: $0, subredditRepository: subredditRepository) }
+                let vms = links.map { PostViewModel(post: $0, subredditRepository: subredditRepository, commentsRepo: commentsRepository, redditorRepo: redditorRepository) }
                 self?.postsViewModels.append(contentsOf: vms)
             }
             .store(in: cancelBag)

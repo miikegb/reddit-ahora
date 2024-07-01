@@ -37,10 +37,12 @@ struct ImageCacheManager {
         }
         
         return fetcher.fetchImage(from: url)
-            .map {
-                ImageCache[url] = PlatformImage(data: $0)!
-                return ImageCache[url]!
+            .compactMap {
+                PlatformImage(data: $0)
             }
+            .handleEvents(receiveOutput: { img in
+                ImageCache[url] = img
+            })
             .replaceError(with: PlatformImage())
             .eraseToAnyPublisher()
     }

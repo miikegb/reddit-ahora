@@ -12,19 +12,42 @@ import Combine
 final class PostViewModel: ObservableObject, Identifiable, Equatable {
     @Published var icon: PlatformImage?
     @Published var image: PlatformImage?
+    @Published var comments: [CommentViewModel] = []
+    lazy var attributedTitle: AttributedString = {
+        let options = AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+        guard let markdown = try? AttributedString(markdown: post.title, options: options) else {
+            return AttributedString(post.title)
+        }
+        return markdown
+    }()
+    lazy var attributedBody: AttributedString = {
+        let options = AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)
+        guard let markdown = try? AttributedString(markdown: post.selftext, options: options) else {
+            return AttributedString(post.selftext)
+        }
+        return markdown
+    }()
+    var postedDateString: String {
+        timestamp(from: post.created)
+    }
 
     private var post: Link
     private var imageCacheManager = ImageCacheManager()
+    private var timestamp = TimestampFormatter()
     private var subredditRepository: SubredditRepository
+    private var commentsRepository: PostCommentsRepository
+    private var redditorRepository: RedditorRepository
     
     private var loadIconPublisher: AnyPublisher<PlatformImage, Error>?
     private var iconLoaderSubscription: AnyCancellable?
     private var loadPostImagePublisher: AnyPublisher<PlatformImage, Error>?
     private var postImageLoaderSubscription: AnyCancellable?
 
-    init(post: Link, subredditRepository: SubredditRepository) {
+    init(post: Link, subredditRepository: SubredditRepository, commentsRepo: PostCommentsRepository, redditorRepo: RedditorRepository) {
         self.post = post
         self.subredditRepository = subredditRepository
+        self.commentsRepository = commentsRepo
+        self.redditorRepository = redditorRepo
         
         setupIcon()
         setupPostImage()
@@ -60,6 +83,14 @@ final class PostViewModel: ObservableObject, Identifiable, Equatable {
             } receiveValue: { [weak self] image in
                 self?.image = image
             }
+    }
+    
+    func loadComments() {
+        commentsRepository.fetchComments(from: post)
+            .replaceError(with: [])
+            .map { [redditorRepository] in $0.map { CommentViewModel(comment: $0, redditorRepository: redditorRepository) } }
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$comments)
     }
 
     // MARK: - Private Methods
@@ -101,4 +132,8 @@ final class PostViewModel: ObservableObject, Identifiable, Equatable {
                     .setFailureType(to: Error.self)
                     .eraseToAnyPublisher()
     }
+}
+
+extension Publishers {
+    
 }

@@ -7,21 +7,20 @@
 
 import Foundation
 
-extension Link {
-    var styledText: AttributedString? {
-        guard let attrString = try? AttributedString(markdown: selftext) else { return nil }
-        return attrString
-    }
-    var styledTitle: AttributedString? {
-        guard let attrString = try? AttributedString(markdown: title) else { return nil }
-        return attrString
-    }
-}
-
 extension Listing {
     var allLinks: [Link] {
         children.compactMap { thing in
             if case let .link(link) = thing { link } else { nil }
+        }
+    }
+}
+
+extension Link {
+    var imageSize: CGSize? {
+        if let firstPreview = preview?.images.first {
+            CGSize(width: firstPreview.source.width, height: firstPreview.source.height)
+        } else {
+            nil
         }
     }
 }
