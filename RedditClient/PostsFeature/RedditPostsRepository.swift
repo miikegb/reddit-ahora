@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import AppNetworking
 
 typealias LinksPublisher = AnyPublisher<[Link], Error>
 protocol PostsRepository {

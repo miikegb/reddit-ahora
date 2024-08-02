@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AppNetworking
 
 enum FixturesLoaderError: Error {
     case fixtureNotFound, unableToReadFixture

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import AppNetworking
 
 struct AppEnvironment {
     var container: AppEnvironmentContainer

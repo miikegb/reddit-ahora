@@ -14,12 +14,12 @@ extension JSONDecoder {
         self.dateDecodingStrategy = dateDecodingStrategy
     }
     
-    static var defaultRedditDecoder: JSONDecoder {
+    public static var defaultRedditDecoder: JSONDecoder {
         JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase, dateDecodingStrategy: .secondsSince1970)
     }
 }
 
-struct ResponseDecoder<Response: Decodable> {
+public struct ResponseDecoder<Response: Decodable> {
     var decode: (Data) throws -> Response
     
     func callAsFunction(_ data: Data) throws -> Response {
@@ -28,7 +28,7 @@ struct ResponseDecoder<Response: Decodable> {
 }
 
 extension ResponseDecoder {
-    init(for type: Response.Type) {
+    public init(for type: Response.Type) {
         decode = {
             try JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase, dateDecodingStrategy: .secondsSince1970)
                 .decode(type, from: $0)

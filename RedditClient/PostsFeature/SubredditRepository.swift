@@ -6,6 +6,7 @@
 //
 
 import Combine
+import AppNetworking
 
 protocol SubredditRepository {
     func fetchSubredditAbout(_ sub: String) -> AnyPublisher<Subreddit, Error>

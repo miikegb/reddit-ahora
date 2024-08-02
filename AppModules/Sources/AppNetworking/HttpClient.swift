@@ -9,7 +9,7 @@ import Foundation
 import Combine
 import OSLog
 
-enum HttpMethod: Equatable {
+public enum HttpMethod: Equatable {
     case get
     case post(payload: Data)
     
@@ -21,9 +21,9 @@ enum HttpMethod: Equatable {
     }
 }
 
-enum SortResults: String, Equatable {
+public enum SortResults: String, Equatable {
     case best, hot, new, top, rising
-    var path: String {
+    public var path: String {
         "\(rawValue).json"
     }
     var asQueryParam: [String: String] {
@@ -31,22 +31,29 @@ enum SortResults: String, Equatable {
     }
 }
 
-struct Resource<Response: Decodable> {
+public struct Resource<Response: Decodable> {
     var path: String
     var method: HttpMethod = .get
     var params: [String: String]? = nil
     var responseDecoder: ResponseDecoder<Response>
+    
+    public init(path: String, method: HttpMethod = .get, params: [String : String]? = nil, responseDecoder: ResponseDecoder<Response>) {
+        self.path = path
+        self.method = method
+        self.params = params
+        self.responseDecoder = responseDecoder
+    }
 }
 
 extension Resource: Equatable {
-    static func ==(_ lhs: Resource<Response>, _ rhs: Resource<Response>) -> Bool {
+    public static func ==(_ lhs: Resource<Response>, _ rhs: Resource<Response>) -> Bool {
         lhs.path == rhs.path &&
         lhs.method == rhs.method &&
         lhs.params == lhs.params
     }
 }
 
-struct HttpClientConfiguration {
+public struct HttpClientConfiguration {
     var baseUrl: URL
     var session: URLSession
     var defaultHeaders: [String: String]? = nil
@@ -71,7 +78,6 @@ extension URLRequest {
             }
         }
     }
-    
 }
 
 extension URL {
@@ -92,22 +98,22 @@ extension URLSession: URLSessionProvider {
     }
 }
 
-protocol Fetcher {
+public protocol Fetcher {
     func fetch<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error>
 }
 
-final class HttpClient: Fetcher {
+public final class HttpClient: Fetcher {
     private let config: HttpClientConfiguration
     private var urlSession: URLSessionProvider { config.session }
     private var baseUrl: URL { config.baseUrl }
     private var logger: Logger
     
-    init(config: HttpClientConfiguration) {
+    public init(config: HttpClientConfiguration) {
         self.config = config
         self.logger = Logger(subsystem: "Networking", category: "HttpClient")
     }
     
-    func fetch<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error> {
+    public func fetch<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error> {
         urlSession.dataTask(for: .init(for: resource, baseUrl: baseUrl, headers: config.defaultHeaders))
             .tryMap { data, _ in
                 try resource.responseDecoder(data)
@@ -129,7 +135,7 @@ final class HttpClient: Fetcher {
 }
 
 extension HttpClientConfiguration {
-    static var `default`: HttpClientConfiguration {
+    public static var `default`: HttpClientConfiguration {
         HttpClientConfiguration(baseUrl: URL(string: "https://reddit.com")!, session: .shared)
     }
 }
@@ -139,10 +145,12 @@ enum HTTPError: Error {
     case unableToLoadImage
 }
 
-struct SimpleImageFetcher {
+public struct SimpleImageFetcher {
     private let logger = Logger(subsystem: "Networking", category: "SimpleImageFetcher")
     
-    func fetchImage(from url: String) -> AnyPublisher<Data, Error> {
+    public init() {}
+    
+    public func fetchImage(from url: String) -> AnyPublisher<Data, Error> {
         guard let imageUrl = URL(string: url) else { return Fail(error: HTTPError.invalidUrlFormat).eraseToAnyPublisher() }
         return URLSession.shared.dataTaskPublisher(for: imageUrl)
             .handleEvents(

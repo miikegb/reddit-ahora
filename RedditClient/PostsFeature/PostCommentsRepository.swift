@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import AppNetworking
 
 protocol PostCommentsRepository {
     func fetchComments(from post: Link) -> AnyPublisher<[Comment], Error>

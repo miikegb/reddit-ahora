@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import AppNetworking
 
 protocol RedditorRepository {
     func fetchRedditorDetails(for redditorId: String) -> AnyPublisher<Redditor, Error>
