@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FeaturePosts
 
 final class NavigationModel: ObservableObject, Codable {
     @Published var selectedSubreddit: RedditPage? = .home

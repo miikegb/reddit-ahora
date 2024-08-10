@@ -8,14 +8,16 @@
 import Foundation
 import Combine
 
-final class CancelBag {
+public final class CancelBag {
     private var cancellables = Set<AnyCancellable>()
     
-    func add(cancellable: AnyCancellable) {
+    public init() {}
+    
+    public func add(cancellable: AnyCancellable) {
         cancellables.insert(cancellable)
     }
     
-    func cancel() {
+    public func cancel() {
         cancellables.removeAll()
     }
     
@@ -25,7 +27,7 @@ final class CancelBag {
 }
 
 extension AnyCancellable {
-    func store(in cancelBag: CancelBag) {
+    public func store(in cancelBag: CancelBag) {
         cancelBag.add(cancellable: self)
     }
 }

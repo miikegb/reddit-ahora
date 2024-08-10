@@ -8,19 +8,20 @@
 import Foundation
 import Combine
 import AppNetworking
+import Core
 
-protocol PostCommentsRepository {
+public protocol PostCommentsRepository {
     func fetchComments(from post: Link) -> AnyPublisher<[Comment], Error>
 }
 
-final class ProdPostCommentsRepository: PostCommentsRepository {
+public final class ProdPostCommentsRepository: PostCommentsRepository {
     private var networkFetcher: Fetcher
     
-    init(networkFetcher: Fetcher) {
+    public init(networkFetcher: Fetcher) {
         self.networkFetcher = networkFetcher
     }
     
-    func fetchComments(from post: Link) -> AnyPublisher<[Comment], Error> {
+    public func fetchComments(from post: Link) -> AnyPublisher<[Comment], Error> {
         let resource = Resource(path: "\(post.permalink).json", responseDecoder: .init(for: [Listing].self))
         let extractor = CommentsExtractor()
         return networkFetcher.fetch(resource)
@@ -40,8 +41,8 @@ struct CommentsExtractor {
     }
 }
 
-struct PreviewPostCommentsRepository: PostCommentsRepository {
-    func fetchComments(from post: Link) -> AnyPublisher<[Comment], Error> {
+public struct PreviewPostCommentsRepository: PostCommentsRepository {
+    public func fetchComments(from post: Link) -> AnyPublisher<[Comment], Error> {
         Just(PreviewData.previewComments).setFailureType(to: Error.self).eraseToAnyPublisher()
     }
 }

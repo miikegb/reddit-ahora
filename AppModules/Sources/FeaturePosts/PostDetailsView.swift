@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Core
 
 struct PostDetailsView: View {
     @ObservedObject var viewModel: PostViewModel

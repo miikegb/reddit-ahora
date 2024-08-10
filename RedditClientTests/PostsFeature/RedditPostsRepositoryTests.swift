@@ -7,6 +7,7 @@
 
 import XCTest
 import Combine
+import AppNetworking
 @testable import RedditClient
 
 final class RedditPostsRepositoryTests: XCTestCase {

@@ -7,8 +7,9 @@
 
 import Foundation
 import Combine
+import Core
 
-final class RedditPageViewModel: ObservableObject {
+public final class RedditPageViewModel: ObservableObject {
     @Published var postsViewModels = [PostViewModel]()
     
     private var postsRepository: PostsRepository
@@ -18,7 +19,7 @@ final class RedditPageViewModel: ObservableObject {
     private var postsIds: Set<String> = []
     private var subredditRepository: SubredditRepository
     
-    init<S: Scheduler>(postsRepository: PostsRepository,
+    public init<S: Scheduler>(postsRepository: PostsRepository,
                        subredditRepository: SubredditRepository,
                        commentsRepository: PostCommentsRepository,
                        redditorRepository: RedditorRepository,

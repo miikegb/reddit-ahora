@@ -7,6 +7,7 @@
 
 import SwiftUI
 import AppNetworking
+import FeaturePosts
 
 struct AppEnvironment {
     var container: AppEnvironmentContainer
@@ -93,32 +94,3 @@ struct Dependencies: EnvironmentKey {
     )
 }
 
-extension RedditPageViewModel {
-    static var preview: RedditPageViewModel {
-        RedditPageViewModel(postsRepository: .preview, subredditRepository: .preview, commentsRepository: .preview, redditorRepository: .preview)
-    }
-}
-
-extension PostsRepository where Self == PreviewPostsRepository {
-    static var preview: PreviewPostsRepository {
-        PreviewPostsRepository()
-    }
-}
-
-extension SubredditRepository where Self == PreviewSubredditRepository {
-    static var preview: PreviewSubredditRepository {
-        PreviewSubredditRepository()
-    }
-}
-
-extension PostCommentsRepository where Self == PreviewPostCommentsRepository {
-    static var preview: PreviewPostCommentsRepository {
-        PreviewPostCommentsRepository()
-    }
-}
-
-extension RedditorRepository where Self == PreviewRedditorRepository {
-    static var preview: PreviewRedditorRepository {
-        PreviewRedditorRepository()
-    }
-}

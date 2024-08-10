@@ -7,12 +7,18 @@
 
 import SwiftUI
 
-struct LazyImageView<Placeholder: View>: View {
+public struct LazyImageView<Placeholder: View>: View {
     @Binding var image: PlatformImage?
     @ViewBuilder var placeholder: Placeholder
-    var contentMode: ContentMode = .fit
+    var contentMode: ContentMode
     
-    var body: some View {
+    public init(image: Binding<PlatformImage?>, @ViewBuilder placeholder: () -> Placeholder, contentMode: ContentMode = .fit) {
+        self._image = image
+        self.placeholder = placeholder()
+        self.contentMode = contentMode
+    }
+    
+    public var body: some View {
         if let image {
             Image(platformImage: image)
                 .resizable()
@@ -24,7 +30,7 @@ struct LazyImageView<Placeholder: View>: View {
 }
 
 extension Image {
-    init(platformImage: PlatformImage) {
+    public init(platformImage: PlatformImage) {
         #if os(macOS)
         self.init(nsImage: platformImage)
         #else

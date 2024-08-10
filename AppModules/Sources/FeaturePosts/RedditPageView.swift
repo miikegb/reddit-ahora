@@ -7,12 +7,18 @@
 
 import SwiftUI
 import Combine
+import Core
 
-struct RedditPageView: View {
+public struct RedditPageView: View {
     @ObservedObject var viewModel: RedditPageViewModel
     @State private var selectedViewModel: PostViewModel?
     
-    var body: some View {
+    public init(viewModel: RedditPageViewModel, selectedViewModel: PostViewModel? = nil) {
+        self.viewModel = viewModel
+        self.selectedViewModel = selectedViewModel
+    }
+    
+    public var body: some View {
         List {
             ForEach(viewModel.postsViewModels) { item in
                 PostItemView(viewModel: item)
@@ -83,18 +89,6 @@ struct PostHeader: View {
     }
 }
 
-struct TappablePlainButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? CGSize(width: 1.4, height: 1.4) : CGSize(width: 1.0, height: 1.0))
-    }
-}
-
-extension ButtonStyle where Self == TappablePlainButtonStyle {
-    static var tappablePlain: Self {
-        TappablePlainButtonStyle()
-    }
-}
 
 // Display:
 // 1. Upvotes
@@ -221,20 +215,20 @@ struct PostItemView: View {
             .padding()
             #endif
         }
-        #if os(macOS)
-        .onChange(of: isHovering) {
-            DispatchQueue.main.async {
-                if isHovering {
-                    NSCursor.pointingHand.push()
-                } else {
-                    NSCursor.pop()
-                }
-            }
-        }
-        .onHover { hovering in
-            isHovering = hovering
-        }
-        #endif
+//        #if os(macOS)
+//        .onChange(of: isHovering) {
+//            DispatchQueue.main.async {
+//                if isHovering {
+//                    NSCursor.pointingHand.push()
+//                } else {
+//                    NSCursor.pop()
+//                }
+//            }
+//        }
+//        .onHover { hovering in
+//            isHovering = hovering
+//        }
+//        #endif
     }
 }
 

@@ -7,25 +7,26 @@
 
 import Combine
 import AppNetworking
+import Core
 
-protocol SubredditRepository {
+public protocol SubredditRepository {
     func fetchSubredditAbout(_ sub: String) -> AnyPublisher<Subreddit, Error>
     subscript(sub: String) -> Subreddit? { get }
 }
 
-final class ProdSubredditRepository: SubredditRepository {
+public final class ProdSubredditRepository: SubredditRepository {
     private var networkFetcher: Fetcher
     private var subredditDetails: [String: Subreddit] = [:]
     
-    init(networkFetcher: Fetcher) {
+    public init(networkFetcher: Fetcher) {
         self.networkFetcher = networkFetcher
     }
     
-    subscript(sub: String) -> Subreddit? {
+    public subscript(sub: String) -> Subreddit? {
         subredditDetails[sub]
     }
     
-    func fetchSubredditAbout(_ sub: String) -> AnyPublisher<Subreddit, Error> {
+    public func fetchSubredditAbout(_ sub: String) -> AnyPublisher<Subreddit, Error> {
         if let subreddit = self[sub] {
             return Just(subreddit)
                 .setFailureType(to: Error.self)
@@ -56,8 +57,8 @@ struct SubredditExtractor: ThingExtractor {
     }
 }
 
-struct PreviewSubredditRepository: SubredditRepository {
-    func fetchSubredditAbout(_ sub: String) -> AnyPublisher<Subreddit, any Error> {
+public struct PreviewSubredditRepository: SubredditRepository {
+    public func fetchSubredditAbout(_ sub: String) -> AnyPublisher<Subreddit, any Error> {
         let subreddit: Thing = try! FixturesLoader.load(json: "PreviewAboutiOSSub")
         let extractor = SubredditExtractor()
         return Just(try! extractor(subreddit))
@@ -65,7 +66,7 @@ struct PreviewSubredditRepository: SubredditRepository {
             .eraseToAnyPublisher()
     }
     
-    subscript(sub: String) -> Subreddit? {
+    public subscript(sub: String) -> Subreddit? {
         nil
     }
 }

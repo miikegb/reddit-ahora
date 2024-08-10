@@ -8,12 +8,12 @@
 import Foundation
 import AppNetworking
 
-enum FixturesLoaderError: Error {
+public enum FixturesLoaderError: Error {
     case fixtureNotFound, unableToReadFixture
 }
 
-final class FixturesLoader {
-    static func load<T: Decodable>(json fixtureName: String, bundle: Bundle = Bundle(for: FixturesLoader.self)) throws -> T {
+public final class FixturesLoader {
+    public static func load<T: Decodable>(json fixtureName: String, bundle: Bundle = Bundle(for: FixturesLoader.self)) throws -> T {
         guard let fixtureUrl = bundle.url(forResource: fixtureName, withExtension: "json")
         else { throw FixturesLoaderError.fixtureNotFound }
         

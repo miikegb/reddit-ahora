@@ -8,7 +8,7 @@
 import Foundation
 
 extension Listing {
-    var allLinks: [Link] {
+    public var allLinks: [Link] {
         children.compactMap { thing in
             if case let .link(link) = thing { link } else { nil }
         }
@@ -16,7 +16,7 @@ extension Listing {
 }
 
 extension Link {
-    var imageSize: CGSize? {
+    public var imageSize: CGSize? {
         if let firstPreview = preview?.images.first {
             CGSize(width: firstPreview.source.width, height: firstPreview.source.height)
         } else {

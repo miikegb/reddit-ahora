@@ -31,6 +31,18 @@ struct Modifiers: View {
     }
 }
 
+public struct TappablePlainButtonStyle: ButtonStyle {
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? CGSize(width: 1.4, height: 1.4) : CGSize(width: 1.0, height: 1.0))
+    }
+}
+
+extension ButtonStyle where Self == TappablePlainButtonStyle {
+    public static var tappablePlain: Self {
+        TappablePlainButtonStyle()
+    }
+}
 
 #Preview {
     Modifiers()

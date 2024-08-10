@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import Core
+import FeaturePosts
 
 struct HighlightStyle: ButtonStyle {
     var isHighlighted: Bool

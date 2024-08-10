@@ -7,20 +7,20 @@
 
 import SwiftUI
 
-struct SlidingMenuView<SidePanel: View, Content: View>: View {
+public struct SlidingMenuView<SidePanel: View, Content: View>: View {
     private let sidePanelWidth = 200.0
     private let topBarHeight = 40.0
     
     @State private var isSideMenuOpened = false
-    var sidePanel: SidePanel
-    var content: Content
+    @ViewBuilder var sidePanel: SidePanel
+    @ViewBuilder var content: Content
     
-    init(sidePanel: () -> SidePanel, content: () -> Content) {
+    public init(@ViewBuilder sidePanel: () -> SidePanel, @ViewBuilder content: () -> Content) {
         self.sidePanel = sidePanel()
         self.content = content()
     }
     
-    var body: some View {
+    public var body: some View {
         ZStack {
             HStack(spacing: 0) {
                 VStack {
@@ -115,9 +115,10 @@ struct HamburgerButtonView: View {
         }
         .listStyle(.plain)
     } content: {
-        RedditPageView(viewModel: RedditPageViewModel(postsRepository: .preview,
-                                                      subredditRepository: .preview,
-                                                      commentsRepository: .preview,
-                                                      redditorRepository: .preview))
+        EmptyView()
+//        RedditPageView(viewModel: RedditPageViewModel(postsRepository: .preview,
+//                                                      subredditRepository: .preview,
+//                                                      commentsRepository: .preview,
+//                                                      redditorRepository: .preview))
     }
 }

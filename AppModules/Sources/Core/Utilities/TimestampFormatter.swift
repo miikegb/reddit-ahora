@@ -7,15 +7,19 @@
 
 import Foundation
 
-struct TimestampFormatter {
+public struct TimestampFormatter {
     typealias Diffs = (year: Int, month: Int, day: Int, hour: Int, minute: Int, second: Int)
-    var referenceDate: Date = .now
+    var referenceDate: Date
 
     // MARK: - Internal
     private static let calendar = Calendar.current
+    
+    public init(referenceDate: Date = .now) {
+        self.referenceDate = referenceDate
+    }
 
     // MARK: - Human readable timestamp of a given date, using as a comparison point the `referenceDate`.
-    func callAsFunction(from date: Date) -> String {
+    public func callAsFunction(from date: Date) -> String {
         getDiffDescriptor(from: date).description()
     }
     

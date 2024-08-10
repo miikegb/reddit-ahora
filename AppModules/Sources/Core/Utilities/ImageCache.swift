@@ -10,14 +10,14 @@ import AppNetworking
 
 #if canImport(AppKit)
 import AppKit
-typealias PlatformImage = NSImage
+public typealias PlatformImage = NSImage
 #else
 import UIKit
-typealias PlatformImage = UIImage
+public typealias PlatformImage = UIImage
 #endif
 
 struct ImageCache {
-    private static var cache: [String: PlatformImage] = [:]
+    nonisolated(unsafe) private static var cache: [String: PlatformImage] = [:]
     
     static subscript(_ key: String) -> PlatformImage? {
         get { cache[key] }
@@ -27,11 +27,13 @@ struct ImageCache {
     }
 }
 
-struct ImageCacheManager {
+public struct ImageCacheManager {
     private var inFlightImages: Set<String> = []
     private var fetcher = SimpleImageFetcher()
     
-    func loadImage(with url: String) -> AnyPublisher<PlatformImage, Never> {
+    public init() {}
+    
+    public func loadImage(with url: String) -> AnyPublisher<PlatformImage, Never> {
         if let cached = ImageCache[url] {
             return Just(cached)
                 .eraseToAnyPublisher()
@@ -48,7 +50,7 @@ struct ImageCacheManager {
             .eraseToAnyPublisher()
     }
     
-    func getImage(with url: String) -> PlatformImage? {
+    public func getImage(with url: String) -> PlatformImage? {
         let image = ImageCache[url]
         return image
     }

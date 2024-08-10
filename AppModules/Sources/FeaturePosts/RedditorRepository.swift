@@ -8,25 +8,26 @@
 import Foundation
 import Combine
 import AppNetworking
+import Core
 
-protocol RedditorRepository {
+public protocol RedditorRepository {
     func fetchRedditorDetails(for redditorId: String) -> AnyPublisher<Redditor, Error>
     subscript(redditorId: String) -> Redditor? { get }
 }
 
-final class ProdRedditorRepository: RedditorRepository {
+public final class ProdRedditorRepository: RedditorRepository {
     private var networkFetcher: Fetcher
     private var redditorsCache: [String: Redditor] = [:]
     
-    init(networkFetcher: Fetcher) {
+    public init(networkFetcher: Fetcher) {
         self.networkFetcher = networkFetcher
     }
     
-    subscript(redditorId: String) -> Redditor? {
+    public subscript(redditorId: String) -> Redditor? {
         redditorsCache[redditorId]
     }
     
-    func fetchRedditorDetails(for redditorId: String) -> AnyPublisher<Redditor, any Error> {
+    public func fetchRedditorDetails(for redditorId: String) -> AnyPublisher<Redditor, any Error> {
         if let redditor = redditorsCache[redditorId] {
             return Just(redditor)
                 .setFailureType(to: Error.self)
@@ -53,16 +54,16 @@ struct RedditorExtractor: ThingExtractor {
     }
 }
 
-struct PreviewRedditorRepository: RedditorRepository {
+public struct PreviewRedditorRepository: RedditorRepository {
     private let previewRedditor = Redditor(id: "abc", name: "redditor", created: .now, iconImg: "", snoovatarImg: "", totalKarma: 1000, commentKarma: 1000, linkKarma: 1000)
     
-    func fetchRedditorDetails(for redditorId: String) -> AnyPublisher<Redditor, Error> {
+    public func fetchRedditorDetails(for redditorId: String) -> AnyPublisher<Redditor, Error> {
         Just(previewRedditor)
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()
     }
     
-    subscript(redditor: String) -> Redditor? {
+    public subscript(redditor: String) -> Redditor? {
         previewRedditor
     }
 }

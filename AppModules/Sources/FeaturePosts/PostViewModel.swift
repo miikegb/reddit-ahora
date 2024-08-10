@@ -7,9 +7,10 @@
 
 import Foundation
 import Combine
+import Core
 
 @dynamicMemberLookup
-final class PostViewModel: ObservableObject, Identifiable, Equatable {
+public final class PostViewModel: ObservableObject, Identifiable, Equatable {
     @Published var icon: PlatformImage?
     @Published var image: PlatformImage?
     @Published var comments: [CommentViewModel] = []
@@ -43,7 +44,7 @@ final class PostViewModel: ObservableObject, Identifiable, Equatable {
     private var loadPostImagePublisher: AnyPublisher<PlatformImage, Error>?
     private var postImageLoaderSubscription: AnyCancellable?
 
-    init(post: Link, subredditRepository: SubredditRepository, commentsRepo: PostCommentsRepository, redditorRepo: RedditorRepository) {
+    public init(post: Link, subredditRepository: SubredditRepository, commentsRepo: PostCommentsRepository, redditorRepo: RedditorRepository) {
         self.post = post
         self.subredditRepository = subredditRepository
         self.commentsRepository = commentsRepo
@@ -57,7 +58,7 @@ final class PostViewModel: ObservableObject, Identifiable, Equatable {
         post[keyPath: keyPath]
     }
     
-    static func ==(_ lhs: PostViewModel, _ rhs: PostViewModel) -> Bool {
+    public static func ==(_ lhs: PostViewModel, _ rhs: PostViewModel) -> Bool {
         lhs.post == rhs.post
     }
     

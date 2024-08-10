@@ -8,9 +8,10 @@
 import Foundation
 import Combine
 import AppNetworking
+import Core
 
-typealias LinksPublisher = AnyPublisher<[Link], Error>
-protocol PostsRepository {
+public typealias LinksPublisher = AnyPublisher<[Link], Error>
+public protocol PostsRepository {
     func getListing(for page: RedditPage) -> LinksPublisher
 }
 
@@ -24,22 +25,22 @@ protocol ThingExtractor<Input, Output> {
     func callAsFunction(_ input: Input) throws -> Output
 }
 
-enum RedditPage: Codable, Identifiable, Hashable {
+public enum RedditPage: Codable, Identifiable, Hashable {
     case home
     case subreddit(name: String)
     
-    var id: String {
+    public var id: String {
         stringify
     }
     
-    var title: String {
+    public var title: String {
         switch self {
         case .home: "Home"
         case let .subreddit(name: name): "r/\(name)"
         }
     }
     
-    var stringify: String {
+    public var stringify: String {
         switch self {
         case .home: ""
         case let .subreddit(name: name): "/r/\(name)"
@@ -55,7 +56,7 @@ struct PostsExtractor: ThingExtractor {
     }
 }
 
-final class RedditPostsRepository: PostsRepository {
+public final class RedditPostsRepository: PostsRepository {
     private let networkFetcher: Fetcher
     private var latestListings: [RedditPage: Listing] = [:]
     private var cancelBag = CancelBag()
@@ -64,7 +65,7 @@ final class RedditPostsRepository: PostsRepository {
         "raw_json": "1"
     ]
     
-    init(fetcher: Fetcher) {
+    public init(fetcher: Fetcher) {
         self.networkFetcher = fetcher
     }
     
@@ -80,7 +81,7 @@ final class RedditPostsRepository: PostsRepository {
         return defaultRequestParams.merging(afterParams ?? [:]) { current, _ in current }
     }
     
-    func getListing(for page: RedditPage) -> LinksPublisher {
+    public func getListing(for page: RedditPage) -> LinksPublisher {
         let resource = Resource(path: listingPath(for: page), params: listingParams(for: page), responseDecoder: .init(for: Listing.self))
         return getListing(resource: resource, extractor: PostsExtractor())
     }
@@ -102,10 +103,10 @@ final class RedditPostsRepository: PostsRepository {
 }
 
 #if DEBUG
-struct PreviewPostsRepository: PostsRepository {
+public struct PreviewPostsRepository: PostsRepository {
     private let sampleSubreddit: Thing = try! FixturesLoader.load(json: "PreviewAboutiOSSub")
     
-    func getListing(for page: RedditPage) -> LinksPublisher {
+    public func getListing(for page: RedditPage) -> LinksPublisher {
         Just(PreviewData.previewPosts)
             .setFailureType(to: Error.self)
             .eraseToAnyPublisher()

@@ -5,12 +5,15 @@ import PackageDescription
 
 let package = Package(
     name: "AppModules",
-    platforms: [.macOS(.v10_15), .iOS(.v16), .tvOS(.v16), .watchOS(.v6), .macCatalyst(.v16)],
+    platforms: [.macOS(.v13), .iOS(.v16), .tvOS(.v16), .watchOS(.v6), .macCatalyst(.v16)],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
         .library(
             name: "AppNetworking",
             targets: ["AppNetworking"]),
+        .library(
+            name: "FeaturePosts",
+            targets: ["FeaturePosts"]),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -20,6 +23,20 @@ let package = Package(
         .testTarget(
             name: "AppNetworkingTests",
             dependencies: ["AppNetworking"]
+        ),
+        
+        .target(
+            name: "FeaturePosts",
+            dependencies: ["AppNetworking", "Core"]),
+        .testTarget(
+            name: "FeaturePostsTests",
+            dependencies: ["FeaturePosts"]
+        ),
+        
+        .target(name: "Core"),
+        .testTarget(
+            name: "CoreTests",
+            dependencies: [ "Core" ]
         ),
     ]
 )

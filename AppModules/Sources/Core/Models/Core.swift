@@ -18,12 +18,12 @@ protocol Created {
     var createdUtc: Date { get }
 }
 
-protocol CommonThing {
+public protocol CommonThing {
     var id: String { get }
     var name: String { get }
 }
 
-enum Thing: Decodable {
+public enum Thing: Decodable {
     case comment(Comment)
     case account(Redditor)
     case link(Link)
@@ -42,7 +42,7 @@ enum Thing: Decodable {
         case .more: "more"
         }
     }
-    var associatedValue: (any CommonThing)? {
+    public var associatedValue: (any CommonThing)? {
         switch self {
         case let .comment(comment): comment
         case let .account(redditor): redditor
@@ -59,7 +59,7 @@ enum Thing: Decodable {
         case data
     }
     
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let kind = try container.decode(String.self, forKey: .kind)
         self = switch kind {
@@ -73,13 +73,13 @@ enum Thing: Decodable {
     }
 }
 
-struct Listing: Decodable {
+public struct Listing: Decodable {
     var kind: String
     var before: String?
-    var after: String?
+    public var after: String?
     var modhash: String
     var dist: Int?
-    var children: [Thing]
+    public var children: [Thing]
     
     private enum CodingKeys: CodingKey {
         case kind
@@ -90,7 +90,7 @@ struct Listing: Decodable {
         case before, after, dist, modhash, children
     }
     
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.kind = try container.decode(String.self, forKey: .kind)
         assert(self.kind == "Listing", "Expected to decode a Listing, but kind's value is \(self.kind) instead of Listing")
@@ -104,12 +104,12 @@ struct Listing: Decodable {
     }
 }
 
-struct Comment: CommonThing, Decodable {
-    var id: String
-    var name: String
-    var author: String
-    var body: String
-    var created: Date
+public struct Comment: CommonThing, Decodable {
+    public var id: String
+    public var name: String
+    public var author: String
+    public var body: String
+    public var created: Date
     var likes: Bool?
     var subredditId: String
     var authorFlairTxt: String?
@@ -137,7 +137,7 @@ struct Comment: CommonThing, Decodable {
         case replies
     }
     
-    init(from decoder: any Decoder) throws {
+    public init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(String.self, forKey: .id)
         self.name = try container.decode(String.self, forKey: .name)
@@ -156,57 +156,68 @@ struct Comment: CommonThing, Decodable {
     }
 }
 
-struct Redditor: CommonThing, Decodable {
-    var id: String
-    var name: String
+public struct Redditor: CommonThing, Decodable {
+    public var id: String
+    public var name: String
     var created: Date
-    var iconImg: String
+    public var iconImg: String
     var snoovatarImg: String
     var totalKarma: Int
     var commentKarma: Int
     var linkKarma: Int
+    
+    public init(id: String, name: String, created: Date, iconImg: String, snoovatarImg: String, totalKarma: Int, commentKarma: Int, linkKarma: Int) {
+        self.id = id
+        self.name = name
+        self.created = created
+        self.iconImg = iconImg
+        self.snoovatarImg = snoovatarImg
+        self.totalKarma = totalKarma
+        self.commentKarma = commentKarma
+        self.linkKarma = linkKarma
+    }
 }
 
-struct ImageMetadata: Decodable {
+public struct ImageMetadata: Decodable {
     var url: URL
     var width: Int
     var height: Int
 }
 
-struct ImagePreview: Decodable {
+public struct ImagePreview: Decodable {
     var id: String
     var source: ImageMetadata
     var resolutions: [ImageMetadata]
 }
 
-struct LinkPreview: Decodable {
+public struct LinkPreview: Decodable {
     var images: [ImagePreview]
     var enabled: Bool
 }
 
-struct Link: CommonThing, Votable, Created, Decodable, Identifiable, Equatable {
-    var id: String
-    var name: String
-    var author: String
-    var title: String
-    var selftext: String
-    var created: Date
+public struct Link: CommonThing, Votable, Created, Decodable, Identifiable, Equatable {
+    public var id: String
+    public var name: String
+    public var author: String
+    public var title: String
+    public var selftext: String
+    public var created: Date
     var createdUtc: Date
-    var ups: Int
-    var downs: Int
+    public var ups: Int
+    public var downs: Int
     var likes: Bool?
     var linkFlairText: String?
-    var numComments: Int
-    var subreddit: String
-    var permalink: String
-    var postHint: String?
+    public var numComments: Int
+    public var subreddit: String
+    public var permalink: String
+    public var postHint: String?
     var pinned: Bool
-    var url: String
+    public var url: String
     var urlOverridenByDest: String?
     var contentCategories: [String]?
     var preview: LinkPreview?
     
-    static func ==(_ lhs: Link, _ rhs: Link) -> Bool {
+    public static func ==(_ lhs: Link, _ rhs: Link) -> Bool {
         lhs.id == rhs.id &&
         lhs.name == rhs.name &&
         lhs.author == rhs.author &&
@@ -216,10 +227,10 @@ struct Link: CommonThing, Votable, Created, Decodable, Identifiable, Equatable {
     }
 }
 
-struct Subreddit: CommonThing, Decodable, Equatable {
-    var id: String
-    var name: String
-    var title: String
+public struct Subreddit: CommonThing, Decodable, Equatable {
+    public var id: String
+    public var name: String
+    public var title: String
     var description: String
     var headerTitle: String
     var headerImg: String?
@@ -227,7 +238,7 @@ struct Subreddit: CommonThing, Decodable, Equatable {
     var bannerSize: [Int]?
     var mobileBannerImage: String?
     var headerSize: [Int]?
-    var iconImg: String?
+    public var iconImg: String?
     var iconSize: [Int]?
     var primaryColor: String
     var activeUserCount: Int
@@ -237,9 +248,9 @@ struct Subreddit: CommonThing, Decodable, Equatable {
     var created: Date
 }
 
-struct More: CommonThing, Decodable, Equatable {
-    var id: String
-    var name: String
+public struct More: CommonThing, Decodable, Equatable {
+    public var id: String
+    public var name: String
     var count: Int
     var parentId: String
     var depth: Int

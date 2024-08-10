@@ -6,6 +6,7 @@
 //
 
 import Combine
+import AppNetworking
 @testable import RedditClient
 
 final class MockNetworkFetcher: Fetcher, Mock {

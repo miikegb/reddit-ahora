@@ -7,15 +7,15 @@
 
 import Foundation
 
-struct PreviewData {
-    static var previewPosts: [Link] {
+public struct PreviewData {
+    public static var previewPosts: [Link] {
         let listing: Listing = try! FixturesLoader.load(json: "PreviewRedditPosts")
         return listing.children.compactMap {
             $0.associatedValue as? Link
         }
     }
     
-    static var previewComments: [Comment] {
+    public static var previewComments: [Comment] {
         let comments: [Thing] = try! FixturesLoader.load(json: "PreviewComments")
         return comments.compactMap {
             $0.associatedValue as? Comment
