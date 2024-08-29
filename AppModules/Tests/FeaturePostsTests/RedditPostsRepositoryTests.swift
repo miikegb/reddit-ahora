@@ -7,8 +7,10 @@
 
 import XCTest
 import Combine
+import Core
+import AppTestingUtils
 import AppNetworking
-@testable import RedditClient
+@testable import FeaturePosts
 
 final class RedditPostsRepositoryTests: XCTestCase {
     enum TestError: Error {
@@ -19,7 +21,7 @@ final class RedditPostsRepositoryTests: XCTestCase {
         // Given
         let mockFetcher = MockNetworkFetcher()
         let publisher = PassthroughSubject<Listing, Error>()
-        let sampleListing: Listing = try TestFixturesLoader.load(json: "sampleListing")
+        let sampleListing: Listing = TestFixture.sampleListing
         let repo = RedditPostsRepository(fetcher: mockFetcher)
         let homePage: RedditPage = .home
         let defaultSort: SortResults = .best

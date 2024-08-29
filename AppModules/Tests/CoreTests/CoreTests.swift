@@ -1,4 +1,4 @@
-import AppCore
+import Core
 import Testing
 
 @Suite

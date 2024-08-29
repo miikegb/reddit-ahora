@@ -30,13 +30,20 @@ let package = Package(
             dependencies: ["AppNetworking", "Core"]),
         .testTarget(
             name: "FeaturePostsTests",
-            dependencies: ["FeaturePosts"]
+            dependencies: ["FeaturePosts", "AppTestingUtils"],
+            resources: [
+                .copy("Fixtures"),
+            ]
         ),
         
-        .target(name: "Core"),
+        .target(
+            name: "Core",
+            dependencies: ["AppNetworking"]),
         .testTarget(
             name: "CoreTests",
             dependencies: [ "Core" ]
         ),
+        
+        .target(name: "AppTestingUtils"),
     ]
 )

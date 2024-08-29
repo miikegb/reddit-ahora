@@ -33,7 +33,7 @@ public final class PostViewModel: ObservableObject, Identifiable, Equatable {
     }
 
     private var post: Link
-    private var imageCacheManager = ImageCacheManager()
+    private var imageCacheManager = ImageLoadingManager()
     private var timestamp = TimestampFormatter()
     private var subredditRepository: SubredditRepository
     private var commentsRepository: PostCommentsRepository

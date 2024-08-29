@@ -29,7 +29,7 @@ final class CommentViewModel: ObservableObject {
 
     private var comment: Comment
     private var redditorRepository: RedditorRepository
-    private var imageCacheManager = ImageCacheManager()
+    private var imageCacheManager = ImageLoadingManager()
     private var timestamp = TimestampFormatter()
 
     private var avatarPublisher: AnyPublisher<PlatformImage, Error>?

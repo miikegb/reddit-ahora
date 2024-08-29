@@ -7,7 +7,7 @@
 
 import Combine
 import AppNetworking
-@testable import RedditClient
+import AppTestingUtils
 
 final class MockNetworkFetcher: Fetcher, Mock {
     let recorder: MockRecorder<MockNetworkFetcher> = MockRecorder()

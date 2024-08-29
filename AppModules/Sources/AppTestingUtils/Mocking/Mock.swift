@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol Mock {
+public protocol Mock {
     associatedtype Props: Matcheable
     associatedtype Builder: MockBuilder<Self>
     associatedtype Verifier: MockVerifier<Self>
@@ -17,16 +17,16 @@ protocol Mock {
     func verifyExpectations(strict: Bool, file: StaticString, line: UInt)
 }
 
-protocol MockRecordeable {
+public protocol MockRecordeable {
     associatedtype MockType: Mock
     init(_ recorder: MockRecorder<MockType>)
 }
 
-protocol MockBuilder<MockType>: MockRecordeable {}
+public protocol MockBuilder<MockType>: MockRecordeable {}
 
-protocol MockVerifier<MockType>: MockRecordeable {}
+public protocol MockVerifier<MockType>: MockRecordeable {}
 
-protocol Matcheable {
+public protocol Matcheable {
     func matches(_ other: Self) -> Bool
 }
 

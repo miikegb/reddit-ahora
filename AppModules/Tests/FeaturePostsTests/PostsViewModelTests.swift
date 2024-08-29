@@ -7,7 +7,9 @@
 
 import XCTest
 import Combine
-@testable import RedditClient
+import Core
+import AppTestingUtils
+@testable import FeaturePosts
 
 final class PostsViewModelTests: XCTestCase {
     
@@ -31,9 +33,9 @@ final class PostsViewModelTests: XCTestCase {
         let mockSubredditRepo = MockSubredditRepository()
         let commentsRepo = MockPostCommentsRepository()
         let redditorRepo = MockRedditorRepository()
-        let sampleListing: Listing = try TestFixturesLoader.load(json: "sampleListing")
-        let sampleListing2: Listing = try TestFixturesLoader.load(json: "sampleListing2")
-
+        let sampleListing: Listing = TestFixture.sampleListing
+        let sampleListing2: Listing = TestFixture.sampleListing2
+        
         expect(mockRepo)
             .getListing(for: .exact(.home)).toBeCalled(.count(2))
         
@@ -69,8 +71,8 @@ final class PostsViewModelTests: XCTestCase {
         let mockSubredditRepo = MockSubredditRepository()
         let redditorRepo = MockRedditorRepository()
         let commentsRepo = MockPostCommentsRepository()
-        let sampleListing: Listing = try TestFixturesLoader.load(json: "sampleListing")
-        let sampleListing2: Listing = try TestFixturesLoader.load(json: "sampleListing2")
+        let sampleListing: Listing = TestFixture.sampleListing
+        let sampleListing2: Listing = TestFixture.sampleListing2
         let postsSubject = CurrentValueSubject<[Link], Error>(sampleListing.allLinks)
 
         stub(mockRepo)
@@ -108,7 +110,7 @@ final class PostsViewModelTests: XCTestCase {
         let mockSubredditRepo = MockSubredditRepository()
         let commentsRepo = MockPostCommentsRepository()
         let redditorRepo = MockRedditorRepository()
-        let link: Link = try TestFixturesLoader.load(json: "sampleLink")
+        let link: Link = TestFixture.sampleLink
         let mockLinks = [PostViewModel(post: link, subredditRepository: mockSubredditRepo, commentsRepo: commentsRepo, redditorRepo: redditorRepo)]
 
         stub(mockRepo)
@@ -135,12 +137,13 @@ final class PostsViewModelTests: XCTestCase {
         let mockSubredditRepo = MockSubredditRepository()
         let commentsRepo = MockPostCommentsRepository()
         let redditorRepo = MockRedditorRepository()
-        let sampleListing: Listing = try TestFixturesLoader.load(json: "sampleListing")
+        let sampleListing: Listing = TestFixture.sampleListing
         let expectedViewModels = sampleListing.allLinks.map { PostViewModel(post: $0, subredditRepository: mockSubredditRepo, commentsRepo: commentsRepo, redditorRepo: redditorRepo) }
-        
+        let ps = CurrentValueSubject<[Link], Error>(sampleListing.allLinks)
+
         stub(mockRepo)
             .getListing(for: .exact(.home))
-            .andReturn(postsSubject.eraseToAnyPublisher())
+            .andReturn(ps.eraseToAnyPublisher())
         
         expect(mockRepo)
             .getListing(for: .exact(.home))

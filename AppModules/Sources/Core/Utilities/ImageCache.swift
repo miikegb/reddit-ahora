@@ -27,7 +27,7 @@ struct ImageCache {
     }
 }
 
-public struct ImageCacheManager {
+public struct ImageLoadingManager {
     private var inFlightImages: Set<String> = []
     private var fetcher = SimpleImageFetcher()
     

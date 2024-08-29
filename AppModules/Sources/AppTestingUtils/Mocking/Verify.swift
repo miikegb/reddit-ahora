@@ -12,7 +12,7 @@ struct MockExpectation<Prop: Matcheable> {
     var ocurrence: ExpectationRecurrence
 }
 
-enum ExpectationRecurrence {
+public enum ExpectationRecurrence {
     case none, once, atLeastOnce, count(Int)
     
     func failureMessage(for propName: String) -> String {
@@ -25,45 +25,46 @@ enum ExpectationRecurrence {
     }
 }
 
-struct VerifierBuilder<SuperVerifier: MockVerifier> {
-    typealias RecorderType = SuperVerifier.MockType
-    typealias Member = SuperVerifier.MockType.Props
+public struct VerifierBuilder<SuperVerifier: MockVerifier> {
+    public typealias RecorderType = SuperVerifier.MockType
+    public typealias Member = SuperVerifier.MockType.Props
     
     var recorder: MockRecorder<RecorderType>
     var member: Member
     var assertion: ExpectationRecurrence
-    init(recorder: MockRecorder<RecorderType>, member: Member, assertion: ExpectationRecurrence = .once) {
+    
+    public init(recorder: MockRecorder<RecorderType>, member: Member, assertion: ExpectationRecurrence = .once) {
         self.recorder = recorder
         self.member = member
         self.assertion = assertion
     }
     
     @discardableResult
-    func times(_ count: Int) -> SuperVerifier {
+    public func times(_ count: Int) -> SuperVerifier {
         recorder.add(expectation: .count(count), for: member)
         return .init(recorder)
     }
     
     @discardableResult
-    func atLeastOnce() -> SuperVerifier {
+    public func atLeastOnce() -> SuperVerifier {
         recorder.add(expectation: .atLeastOnce, for: member)
         return .init(recorder)
     }
     
     @discardableResult
-    func once() -> SuperVerifier {
+    public func once() -> SuperVerifier {
         recorder.add(expectation: .once, for: member)
         return .init(recorder)
     }
     
     @discardableResult
-    func toBeCalled(_ recurrence: ExpectationRecurrence = .once) -> SuperVerifier {
+    public func toBeCalled(_ recurrence: ExpectationRecurrence = .once) -> SuperVerifier {
         recorder.add(expectation: recurrence, for: member)
         return .init(recorder)
     }
     
     @discardableResult
-    func notToBeCalled() -> SuperVerifier {
+    public func notToBeCalled() -> SuperVerifier {
         recorder.add(expectation: .none, for: member)
         return .init(recorder)
     }

@@ -11,7 +11,7 @@ typealias MockComparatorKey<T> = (T, T) -> Bool
 
 // A type used to register Comparator functions for types that don't conform to the `Equatable` protocol
 struct MockerTypeComparators {
-    private static var other: [ObjectIdentifier: Any] = [:]
+    nonisolated(unsafe) private static var other: [ObjectIdentifier: Any] = [:]
     
     static subscript<K>(key: K.Type) -> MockComparatorKey<K>? {
         get { other[ObjectIdentifier(key)] as? MockComparatorKey<K> }
@@ -19,13 +19,13 @@ struct MockerTypeComparators {
     }
 }
 
-enum Matcher<T> {
+public enum Matcher<T> {
     case any
     case exact(T)
 }
 
 extension Matcher: Equatable where T: Equatable {
-    static func ==(lhs: Matcher<T>, rhs: Matcher<T>) -> Bool {
+    public static func ==(lhs: Matcher<T>, rhs: Matcher<T>) -> Bool {
         switch (lhs, rhs) {
         case (.any, .any): true
         case let (.exact(lhsValue), .exact(rhsValue)): lhsValue == rhsValue
@@ -35,7 +35,7 @@ extension Matcher: Equatable where T: Equatable {
 }
 
 extension Matcher: Matcheable {
-    func matches(_ other: Matcher<T>) -> Bool {
+    public func matches(_ other: Matcher<T>) -> Bool {
         switch (self, other) {
         case (.any, _), (_, .any): return true
         case let (.exact(arg1), .exact(arg2)):
@@ -66,7 +66,7 @@ extension Matcher where T == GenericArgument {
 }
 
 extension Matcher {
-    func turnToGenericArgument() -> Matcher<GenericArgument> {
+    public func turnToGenericArgument() -> Matcher<GenericArgument> {
         switch self {
         case .any: .any
         case let .exact(arg): .exact(GenericArgument(argument: arg, comparator: GenericComparator(compare: { _ in
@@ -86,7 +86,7 @@ extension Matcher where T: Equatable {
 }
 
 // A type-erasing type to allow us to work with Generic arguments
-struct GenericArgument {
+public struct GenericArgument {
     var argument: Any
     var comparator: GenericComparator
 }

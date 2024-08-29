@@ -7,7 +7,8 @@
 
 import Foundation
 import Combine
-@testable import RedditClient
+import AppTestingUtils
+import FeaturePosts
 
 extension MockRecorder {
     func resolveReturnValue<ReturnValue>(for prop: Prop) -> AnyPublisher<ReturnValue, any Error> { PassthroughSubject<ReturnValue, Error>().eraseToAnyPublisher() }

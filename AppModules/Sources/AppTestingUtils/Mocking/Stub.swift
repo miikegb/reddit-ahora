@@ -16,31 +16,41 @@ enum ResolveError: Error {
     case notFound, signatureMismatch
 }
 
-struct StubBuilder<SuperBuilder: MockBuilder, Arguments, ReturnType> {
-    typealias Signature =  (Arguments) -> ReturnType
+public struct StubBuilder<SuperBuilder: MockBuilder, Arguments, ReturnType> {
+    public typealias Signature =  (Arguments) -> ReturnType
     var recorder: MockRecorder<SuperBuilder.MockType>
     var member: SuperBuilder.MockType.Props
     
+    public init(recorder: MockRecorder<SuperBuilder.MockType>, member: SuperBuilder.MockType.Props) {
+        self.recorder = recorder
+        self.member = member
+    }
+    
     @discardableResult
-    func andReturn(_ returnValue: ReturnType) -> SuperBuilder {
+    public func andReturn(_ returnValue: ReturnType) -> SuperBuilder {
         recorder.return(returnValue, for: member)
         return .init(recorder)
     }
     
     @discardableResult
-    func with(_ closure: @escaping Signature) -> SuperBuilder {
+    public func with(_ closure: @escaping Signature) -> SuperBuilder {
         recorder.return(closure, for: member)
         return .init(recorder)
     }
 }
 
-struct StubResolver<T: Mock, Arguments, ReturnType> {
-    typealias InnerClosureType = (Arguments) -> ReturnType
-    typealias ClosureType = (InnerClosureType) -> ReturnType
+public struct StubResolver<T: Mock, Arguments, ReturnType> {
+    public typealias InnerClosureType = (Arguments) -> ReturnType
+    public typealias ClosureType = (InnerClosureType) -> ReturnType
     var recorder: MockRecorder<T>
     var mock: T
     
-    func resolve(for member: T.Props, closure: ClosureType) throws -> ReturnType {
+    public init(recorder: MockRecorder<T>, mock: T) {
+        self.recorder = recorder
+        self.mock = mock
+    }
+    
+    public func resolve(for member: T.Props, closure: ClosureType) throws -> ReturnType {
         return try recorder.resolveReturnValue(for: member) { savedClosure in
             if let castClosure = savedClosure as? InnerClosureType {
                 return closure(castClosure)

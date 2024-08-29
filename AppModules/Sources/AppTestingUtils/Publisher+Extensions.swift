@@ -8,7 +8,7 @@
 import Combine
 
 extension Publisher {
-    func flexValue(with valueReceiver: @escaping (Output) -> Void) {
+    public func flexValue(with valueReceiver: @escaping (Output) -> Void) {
         let flex = FlexValueSubscriber<Output, Failure>(valueReceiver: valueReceiver)
         subscribe(flex)
     }

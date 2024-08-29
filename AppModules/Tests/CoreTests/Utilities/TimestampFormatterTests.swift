@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import RedditClient
+import Core
 
 final class TimestampTests: XCTestCase {
     

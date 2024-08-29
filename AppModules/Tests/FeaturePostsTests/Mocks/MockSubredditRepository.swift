@@ -7,7 +7,9 @@
 
 import Foundation
 import Combine
-@testable import RedditClient
+import AppTestingUtils
+import FeaturePosts
+import Core
 
 final class MockSubredditRepository: Mock, SubredditRepository {
     let recorder: MockRecorder<MockSubredditRepository> = MockRecorder()
