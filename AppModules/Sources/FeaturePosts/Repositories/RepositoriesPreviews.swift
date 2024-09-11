@@ -7,6 +7,8 @@
 
 import Foundation
 
+#if DEBUG
+
 extension RedditPageViewModel {
     public static var preview: RedditPageViewModel {
         RedditPageViewModel(postsRepository: .preview, subredditRepository: .preview, commentsRepository: .preview, redditorRepository: .preview)
@@ -36,3 +38,5 @@ extension RedditorRepository where Self == PreviewRedditorRepository {
         PreviewRedditorRepository()
     }
 }
+
+#endif

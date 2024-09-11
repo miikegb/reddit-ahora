@@ -6,19 +6,24 @@
 //
 
 import Foundation
+import Core
 
-public struct PreviewData {
-    public static var previewPosts: [Link] {
-        let listing: Listing = try! FixturesLoader.load(json: "PreviewRedditPosts")
+#if DEBUG
+
+struct PreviewData {
+    static var previewPosts: [Link] {
+        let listing: Listing = FixtureFinder.previewRedditPosts
         return listing.children.compactMap {
             $0.associatedValue as? Link
         }
     }
     
-    public static var previewComments: [Comment] {
-        let comments: [Thing] = try! FixturesLoader.load(json: "PreviewComments")
+    static var previewComments: [Comment] {
+        let comments: [Thing] = FixtureFinder.previewComments
         return comments.compactMap {
             $0.associatedValue as? Comment
         }
     }
 }
+
+#endif

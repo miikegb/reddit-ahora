@@ -59,7 +59,7 @@ struct SubredditExtractor: ThingExtractor {
 
 public struct PreviewSubredditRepository: SubredditRepository {
     public func fetchSubredditAbout(_ sub: String) -> AnyPublisher<Subreddit, any Error> {
-        let subreddit: Thing = try! FixturesLoader.load(json: "PreviewAboutiOSSub")
+        let subreddit: Thing = FixtureFinder.previewAboutiOSSub
         let extractor = SubredditExtractor()
         return Just(try! extractor(subreddit))
             .setFailureType(to: Error.self)

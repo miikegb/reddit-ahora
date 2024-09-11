@@ -7,7 +7,6 @@
 
 import Foundation
 import AppNetworking
-import Core
 
 extension ResponseDecoder {
     public init(for type: Response.Type) {

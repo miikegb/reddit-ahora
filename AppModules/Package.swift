@@ -27,7 +27,11 @@ let package = Package(
         
         .target(
             name: "FeaturePosts",
-            dependencies: ["AppNetworking", "Core"]),
+            dependencies: ["AppNetworking", "Core"],
+            resources: [
+                .copy("Fixtures"),
+            ]
+        ),
         .testTarget(
             name: "FeaturePostsTests",
             dependencies: ["FeaturePosts", "AppTestingUtils"],

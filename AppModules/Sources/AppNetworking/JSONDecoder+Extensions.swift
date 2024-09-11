@@ -18,3 +18,11 @@ extension JSONDecoder {
         JSONDecoder(keyDecodingStrategy: .convertFromSnakeCase, dateDecodingStrategy: .secondsSince1970)
     }
 }
+
+extension JSONEncoder {
+    public static var defaultRedditEncoder: JSONEncoder {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        return encoder
+    }
+}

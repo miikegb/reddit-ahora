@@ -104,7 +104,7 @@ public final class RedditPostsRepository: PostsRepository {
 
 #if DEBUG
 public struct PreviewPostsRepository: PostsRepository {
-    private let sampleSubreddit: Thing = try! FixturesLoader.load(json: "PreviewAboutiOSSub")
+    private let sampleSubreddit: Thing = FixtureFinder.previewAboutiOSSub
     
     public func getListing(for page: RedditPage) -> LinksPublisher {
         Just(PreviewData.previewPosts)
