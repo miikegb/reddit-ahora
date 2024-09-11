@@ -13,47 +13,36 @@ public final class RedditPageViewModel: ObservableObject {
     @Published var postsViewModels = [PostViewModel]()
     
     private var postsRepository: PostsRepository
+    private var commentsRepository: PostCommentsRepository
+    private var redditorRepository: RedditorRepository
     private var cancelBag = CancelBag()
     private var fetchListingSubject = PassthroughSubject<RedditPage, Error>()
     private var currentPage: RedditPage = .home
     private var postsIds: Set<String> = []
     private var subredditRepository: SubredditRepository
     
-    public init<S: Scheduler>(postsRepository: PostsRepository,
+    public init(postsRepository: PostsRepository,
                        subredditRepository: SubredditRepository,
                        commentsRepository: PostCommentsRepository,
-                       redditorRepository: RedditorRepository,
-                       scheduler: S = DispatchQueue.main) {
+                       redditorRepository: RedditorRepository) {
         self.postsRepository = postsRepository
         self.subredditRepository = subredditRepository
-        
-        setupListingPublisher()
-            .replaceError(with: [])
-            .map { [weak self] links in
-                let filteredPosts = links.filter { self?.postsIds.contains($0.id) == false }
-                filteredPosts.forEach { self?.postsIds.insert($0.id) }
-                return filteredPosts
-            }
-            .receive(on: scheduler)
-            .sink { [weak self] (links: [Link]) -> Void in
-                let vms = links.map { PostViewModel(post: $0, subredditRepository: subredditRepository, commentsRepo: commentsRepository, redditorRepo: redditorRepository) }
-                self?.postsViewModels.append(contentsOf: vms)
-            }
-            .store(in: cancelBag)
-        
-        // Start fetching posts automatically
-        fetchListingSubject.send(currentPage)
+        self.commentsRepository = commentsRepository
+        self.redditorRepository = redditorRepository
     }
     
-    func loadMorePosts() {
-        fetchListingSubject.send(currentPage)
-    }
-    
-    private func setupListingPublisher() -> LinksPublisher {
-        fetchListingSubject
-            .flatMap { [postsRepository] in
-                postsRepository.getListing(for: $0)
+    @MainActor
+    func loadPosts() {
+        Task {
+            do {
+                let posts = try await postsRepository.getListingAsync(for: .home)
+                let filteredPosts = posts.filter { postsIds.contains($0.id) == false }
+                filteredPosts.forEach { postsIds.insert($0.id) }
+                let vms = filteredPosts.map { PostViewModel(post: $0, subredditRepository: subredditRepository, commentsRepo: commentsRepository, redditorRepo: redditorRepository) }
+                postsViewModels.append(contentsOf: vms)
+            } catch {
+                
             }
-            .eraseToAnyPublisher()
+        }
     }
 }

@@ -89,6 +89,7 @@ extension URL {
 
 protocol URLSessionProvider {
     func dataTask(for request: URLRequest) -> AnyPublisher<(data: Data, response: URLResponse), URLError>
+    func data(for request: URLRequest) async throws -> (Data, URLResponse)
 }
 
 extension URLSession: URLSessionProvider {
@@ -99,6 +100,7 @@ extension URLSession: URLSessionProvider {
 }
 
 public protocol Fetcher {
+    func asyncFech<T>(_ resource: Resource<T>) async throws -> T
     func fetch<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error>
 }
 
@@ -111,6 +113,18 @@ public final class HttpClient: Fetcher {
     public init(config: HttpClientConfiguration) {
         self.config = config
         self.logger = Logger(subsystem: "Networking", category: "HttpClient")
+    }
+    
+    public func asyncFech<T>(_ resource: Resource<T>) async throws -> T where T : Decodable {
+        let (data, response) = try await urlSession.data(for: .init(for: resource, baseUrl: baseUrl, headers: config.defaultHeaders))
+        do {
+            let result = try resource.responseDecoder(data)
+            logger.info("[HTTPClient:\(#function)] Completed loading \(resource.path)")
+            return result
+        } catch {
+            logger.error("[HTTPClient:\(#function)] Failed loading \(resource.path) with error: \(error.localizedDescription)")
+            throw error
+        }
     }
     
     public func fetch<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error> {

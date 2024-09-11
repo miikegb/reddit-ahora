@@ -10,9 +10,8 @@ import Combine
 import AppNetworking
 import Core
 
-public typealias LinksPublisher = AnyPublisher<[Link], Error>
 public protocol PostsRepository {
-    func getListing(for page: RedditPage) -> LinksPublisher
+    func getListingAsync(for page: RedditPage) async throws -> [Link]
 }
 
 enum ThingExtractorError: Error {
@@ -81,24 +80,12 @@ public final class RedditPostsRepository: PostsRepository {
         return defaultRequestParams.merging(afterParams ?? [:]) { current, _ in current }
     }
     
-    public func getListing(for page: RedditPage) -> LinksPublisher {
+    public func getListingAsync(for page: RedditPage) async throws -> [Link] {
         let resource = Resource(path: listingPath(for: page), params: listingParams(for: page), responseDecoder: .init(for: Listing.self))
-        return getListing(resource: resource, extractor: PostsExtractor())
-    }
-    
-    private func getListing<T>(resource: Resource<Listing>, extractor: some ThingExtractor<Listing, T>) -> AnyPublisher<T, Error> {
-        networkFetcher.fetch(resource)
-            .handleEvents(receiveOutput: { [weak self] listing in
-                self?.latestListings[.home] = listing
-            })
-            .tryMap { try extractor($0) }
-            .eraseToAnyPublisher()
-    }
-    
-    private func getThing<T>(resource: Resource<Thing>, extractor: some ThingExtractor<Thing, T>) -> AnyPublisher<T, Error> {
-        networkFetcher.fetch(resource)
-            .tryMap { try extractor($0) }
-            .eraseToAnyPublisher()
+        let listing = try await networkFetcher.asyncFech(resource)
+        latestListings[page] = listing
+        let extractor = PostsExtractor()
+        return extractor(listing)
     }
 }
 
@@ -106,10 +93,8 @@ public final class RedditPostsRepository: PostsRepository {
 public struct PreviewPostsRepository: PostsRepository {
     private let sampleSubreddit: Thing = FixtureFinder.previewAboutiOSSub
     
-    public func getListing(for page: RedditPage) -> LinksPublisher {
-        Just(PreviewData.previewPosts)
-            .setFailureType(to: Error.self)
-            .eraseToAnyPublisher()
+    public func getListingAsync(for page: RedditPage) async throws -> [Link] {
+        PreviewData.previewPosts
     }
 }
 #endif

@@ -178,24 +178,24 @@ public struct Redditor: CommonThing, Decodable {
     }
 }
 
-public struct ImageMetadata: Decodable {
+public struct ImageMetadata: Decodable, Sendable {
     var url: URL
     var width: Int
     var height: Int
 }
 
-public struct ImagePreview: Decodable {
+public struct ImagePreview: Decodable, Sendable {
     var id: String
     var source: ImageMetadata
     var resolutions: [ImageMetadata]
 }
 
-public struct LinkPreview: Decodable {
+public struct LinkPreview: Decodable, Sendable {
     var images: [ImagePreview]
     var enabled: Bool
 }
 
-public struct Link: CommonThing, Votable, Created, Decodable, Identifiable, Equatable {
+public struct Link: CommonThing, Votable, Created, Decodable, Identifiable, Equatable, Sendable {
     public var id: String
     public var name: String
     public var author: String

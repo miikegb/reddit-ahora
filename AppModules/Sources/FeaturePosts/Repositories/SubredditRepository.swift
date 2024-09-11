@@ -10,6 +10,7 @@ import AppNetworking
 import Core
 
 public protocol SubredditRepository {
+    func fetchAboutSubreddit(_ sub: String) async throws -> Subreddit
     func fetchSubredditAbout(_ sub: String) -> AnyPublisher<Subreddit, Error>
     subscript(sub: String) -> Subreddit? { get }
 }
@@ -40,6 +41,18 @@ public final class ProdSubredditRepository: SubredditRepository {
             .eraseToAnyPublisher()
     }
     
+    public func fetchAboutSubreddit(_ sub: String) async throws -> Subreddit {
+        if let subreddit = self[sub] {
+            return subreddit
+        }
+        let resource = Resource(path: "r/\(sub)/about.json", responseDecoder: .init(for: Thing.self))
+        let thing = try await networkFetcher.asyncFech(resource)
+        let extractor = SubredditExtractor()
+        let subreddit = try extractor(thing)
+        subredditDetails[sub] = subreddit
+        return subreddit
+    }
+    
     private func getThing<T>(resource: Resource<Thing>, extractor: some ThingExtractor<Thing, T>) -> AnyPublisher<T, Error> {
         networkFetcher.fetch(resource)
             .tryMap { try extractor($0) }
@@ -68,5 +81,11 @@ public struct PreviewSubredditRepository: SubredditRepository {
     
     public subscript(sub: String) -> Subreddit? {
         nil
+    }
+    
+    public func fetchAboutSubreddit(_ sub: String) async throws -> Subreddit {
+        let subreddit: Thing = FixtureFinder.previewAboutiOSSub
+        let extractor = SubredditExtractor()
+        return try! extractor(subreddit)
     }
 }

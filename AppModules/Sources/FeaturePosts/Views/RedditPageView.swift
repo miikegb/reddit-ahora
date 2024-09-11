@@ -24,7 +24,7 @@ public struct RedditPageView: View {
                 PostItemView(viewModel: item)
                     .onAppear {
                         if item == viewModel.postsViewModels.last {
-                            viewModel.loadMorePosts()
+                            viewModel.loadPosts()
                         }
                     }
                     .onTapGesture {
@@ -38,6 +38,9 @@ public struct RedditPageView: View {
             PostDetailsView(viewModel: post)
         }
         .animation(.default, value: viewModel.postsViewModels)
+        .onAppear {
+            viewModel.loadPosts()
+        }
     }
 }
 
