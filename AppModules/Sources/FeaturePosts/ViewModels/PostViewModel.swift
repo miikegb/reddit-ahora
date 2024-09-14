@@ -9,8 +9,9 @@ import Foundation
 import Combine
 import Core
 
+@MainActor
 @dynamicMemberLookup
-public final class PostViewModel: ObservableObject, Identifiable, Equatable {
+public final class PostViewModel: ObservableObject, Identifiable, @preconcurrency Equatable {
     @Published var icon: PlatformImage?
     @Published var image: PlatformImage?
     @Published var comments: [CommentViewModel] = []
@@ -35,23 +36,15 @@ public final class PostViewModel: ObservableObject, Identifiable, Equatable {
     private var post: Link
     private var imageCacheManager = ImageLoadingManager()
     private var timestamp = TimestampFormatter()
-    private var subredditRepository: SubredditRepository
-    private var commentsRepository: PostCommentsRepository
-    private var redditorRepository: RedditorRepository
-    
-    private var loadIconPublisher: AnyPublisher<PlatformImage, Error>?
-    private var iconLoaderSubscription: AnyCancellable?
-    private var loadPostImagePublisher: AnyPublisher<PlatformImage, Error>?
-    private var postImageLoaderSubscription: AnyCancellable?
+    private let subredditRepository: SubredditRepository
+    private let commentsRepository: PostCommentsRepository
+    private let redditorRepository: RedditorRepository
 
     public init(post: Link, subredditRepository: SubredditRepository, commentsRepo: PostCommentsRepository, redditorRepo: RedditorRepository) {
         self.post = post
         self.subredditRepository = subredditRepository
         self.commentsRepository = commentsRepo
         self.redditorRepository = redditorRepo
-        
-        setupIcon()
-        setupPostImage()
     }
     
     subscript<V>(dynamicMember keyPath: KeyPath<Link, V>) -> V {
@@ -62,79 +55,46 @@ public final class PostViewModel: ObservableObject, Identifiable, Equatable {
         lhs.post == rhs.post
     }
     
-    func loadIconIfNeeded() {
-        guard icon == nil, let loadIconPublisher else { return }
+    func loadIconIfNeeded() async {
+        guard icon == nil else { return }
         
-        iconLoaderSubscription = loadIconPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                self?.iconLoaderSubscription = nil
-            } receiveValue: { [weak self] image in
-                self?.icon = image
-            }
-    }
-    
-    func loadPostImageIfNeeded() {
-        guard image == nil, let loadPostImagePublisher else { return }
-        
-        postImageLoaderSubscription = loadPostImagePublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] completion in
-                self?.postImageLoaderSubscription = nil
-            } receiveValue: { [weak self] image in
-                self?.image = image
-            }
-    }
-    
-    func loadComments() {
-        commentsRepository.fetchComments(from: post)
-            .replaceError(with: [])
-            .map { [redditorRepository] in $0.map { CommentViewModel(comment: $0, redditorRepository: redditorRepository) } }
-            .receive(on: DispatchQueue.main)
-            .assign(to: &$comments)
-    }
-
-    // MARK: - Private Methods
-    private func setupIcon() {
-        if let subreddit = subredditRepository[post.subreddit], let iconImg = subreddit.iconImg, let cachedIcon = imageCacheManager.getImage(with: iconImg) {
-            icon = cachedIcon
-        } else {
-            setupIconLoader()
-        }
-    }
-    
-    private func setupPostImage() {
-        guard post.postHint == "image" else { return }
-        if let postImage = imageCacheManager.getImage(with: post.url) {
-            image = postImage
-        } else {
-            loadPostImagePublisher = loadImage(from: post.url)
-        }
-    }
-    
-    private func setupIconLoader() {
-        if let subreddit = subredditRepository[post.subreddit] {
-            if let iconImg = subreddit.iconImg {
-                loadIconPublisher = loadImage(from: iconImg)
+        if let subreddit = await fetchSubreddit(), let iconImg = subreddit.iconImg {
+            if let icon = await imageCacheManager.getImage(with: iconImg) {
+                self.icon = icon
             } else {
-                // TODO: Handle this scenario
-                fatalError("Need to handle this scenario...")
+                icon = await imageCacheManager.loadImageAsync(with: iconImg)
             }
         } else {
-            loadIconPublisher = subredditRepository.fetchSubredditAbout(post.subreddit)
-                .compactMap { $0.iconImg }
-                .flatMap(loadImage)
-                .eraseToAnyPublisher()
+            print("Subreddit: \(post.subreddit) doesn't have an icon")
         }
     }
     
-    private func loadImage(from imageUrl: String) -> AnyPublisher<PlatformImage, Error> {
-        imageCacheManager.loadImage(with: imageUrl)
-                    .setFailureType(to: Error.self)
-                    .eraseToAnyPublisher()
+    private func fetchSubreddit() async -> Subreddit? {
+        if let subreddit = await subredditRepository[post.subreddit] {
+            return subreddit
+        }
+        do {
+            return try await subredditRepository.fetchAboutSubreddit(post.subreddit)
+        } catch {
+            return nil
+        }
     }
-}
-
-extension Publishers {
     
+    func loadPostImageIfNeeded() async {
+        guard post.postHint == "image", image == nil else { return }
+        image = if let cachedImage = await imageCacheManager.getImage(with: post.url) {
+            cachedImage
+        } else {
+            await imageCacheManager.loadImageAsync(with: post.url)
+        }
+    }
+    
+    func loadComments() async {
+        do {
+            let comments = try await commentsRepository.fetchCommentsAsync(from: post)
+            self.comments = comments.map { CommentViewModel(comment: $0, redditorRepository: redditorRepository) }
+        } catch {
+            print("Error loading comments...")
+        }
+    }
 }

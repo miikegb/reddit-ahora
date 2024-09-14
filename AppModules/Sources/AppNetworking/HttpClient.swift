@@ -53,7 +53,7 @@ extension Resource: Equatable {
     }
 }
 
-public struct HttpClientConfiguration {
+public struct HttpClientConfiguration: Sendable {
     var baseUrl: URL
     var session: URLSession
     var defaultHeaders: [String: String]? = nil
@@ -99,7 +99,7 @@ extension URLSession: URLSessionProvider {
     }
 }
 
-public protocol Fetcher {
+public protocol Fetcher: Sendable {
     func asyncFech<T>(_ resource: Resource<T>) async throws -> T
     func fetch<T>(_ resource: Resource<T>) -> AnyPublisher<T, Error>
 }
@@ -108,7 +108,7 @@ public final class HttpClient: Fetcher {
     private let config: HttpClientConfiguration
     private var urlSession: URLSessionProvider { config.session }
     private var baseUrl: URL { config.baseUrl }
-    private var logger: Logger
+    private let logger: Logger
     
     public init(config: HttpClientConfiguration) {
         self.config = config
@@ -116,7 +116,7 @@ public final class HttpClient: Fetcher {
     }
     
     public func asyncFech<T>(_ resource: Resource<T>) async throws -> T where T : Decodable {
-        let (data, response) = try await urlSession.data(for: .init(for: resource, baseUrl: baseUrl, headers: config.defaultHeaders))
+        let (data, _) = try await urlSession.data(for: .init(for: resource, baseUrl: baseUrl, headers: config.defaultHeaders))
         do {
             let result = try resource.responseDecoder(data)
             logger.info("[HTTPClient:\(#function)] Completed loading \(resource.path)")
@@ -159,10 +159,22 @@ enum HTTPError: Error {
     case unableToLoadImage
 }
 
-public struct SimpleImageFetcher {
+public struct SimpleImageFetcher: Sendable {
     private let logger = Logger(subsystem: "Networking", category: "SimpleImageFetcher")
     
     public init() {}
+    
+    public func fetchImageAsync(from url: String) async throws -> Data {
+        guard let imageUrl = URL(string: url) else { throw HTTPError.invalidUrlFormat }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: imageUrl)
+            logger.info("[SimpleImageFetcher:\(#function)] Completed loading \(url)")
+            return data
+        } catch {
+            logger.error("[SimpleImageFetcher:\(#function)] Failed loading \(url) with error: \(error.localizedDescription)")
+            throw HTTPError.unableToLoadImage
+        }
+    }
     
     public func fetchImage(from url: String) -> AnyPublisher<Data, Error> {
         guard let imageUrl = URL(string: url) else { return Fail(error: HTTPError.invalidUrlFormat).eraseToAnyPublisher() }

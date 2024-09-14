@@ -36,8 +36,8 @@ struct PostDetailsView: View {
                 }
             }
         }
-        .onAppear {
-            viewModel.loadComments()
+        .task {
+            await viewModel.loadComments()
         }
         .padding()
     }
@@ -75,8 +75,8 @@ struct CommentView: View {
         }
         .padding(.horizontal)
         .padding(.top)
-        .onAppear {
-            viewModel.loadAuthorAvatar()
+        .task {
+            await viewModel.loadAuthorAvatar()
         }
     }
 }

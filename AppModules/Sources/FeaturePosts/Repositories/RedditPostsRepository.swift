@@ -10,7 +10,7 @@ import Combine
 import AppNetworking
 import Core
 
-public protocol PostsRepository {
+public protocol PostsRepository: Sendable {
     func getListingAsync(for page: RedditPage) async throws -> [Link]
 }
 
@@ -24,7 +24,7 @@ protocol ThingExtractor<Input, Output> {
     func callAsFunction(_ input: Input) throws -> Output
 }
 
-public enum RedditPage: Codable, Identifiable, Hashable {
+public enum RedditPage: Codable, Identifiable, Hashable, Sendable {
     case home
     case subreddit(name: String)
     
@@ -55,25 +55,25 @@ struct PostsExtractor: ThingExtractor {
     }
 }
 
-public final class RedditPostsRepository: PostsRepository {
+public final class RedditPostsRepository: PostsRepository, Sendable {
     private let networkFetcher: Fetcher
-    private var latestListings: [RedditPage: Listing] = [:]
-    private var cancelBag = CancelBag()
+    private let listingsCache: InMemoryCache<RedditPage, Listing>
     
-    private var defaultRequestParams = [
+    private let defaultRequestParams = [
         "raw_json": "1"
     ]
     
     public init(fetcher: Fetcher) {
         self.networkFetcher = fetcher
+        self.listingsCache = InMemoryCache()
     }
     
     private func listingPath(for page: RedditPage, sorting: SortResults = .best) -> String {
         "\(page.stringify)/\(sorting.path)"
     }
     
-    private func listingParams(for page: RedditPage) -> [String: String] {
-        let afterParams: [String: String]? = if let afterPost = latestListings[page]?.after {
+    private func listingParams(for page: RedditPage) async -> [String: String] {
+        let afterParams: [String: String]? = if let afterPost = await listingsCache[page]?.after {
             ["after": afterPost]
         } else { nil }
         
@@ -81,15 +81,15 @@ public final class RedditPostsRepository: PostsRepository {
     }
     
     public func getListingAsync(for page: RedditPage) async throws -> [Link] {
-        let resource = Resource(path: listingPath(for: page), params: listingParams(for: page), responseDecoder: .init(for: Listing.self))
+        let resource = Resource(path: listingPath(for: page), params: await listingParams(for: page), responseDecoder: .init(for: Listing.self))
         let listing = try await networkFetcher.asyncFech(resource)
-        latestListings[page] = listing
+        await listingsCache.set(listing, for: page)
         let extractor = PostsExtractor()
         return extractor(listing)
     }
 }
 
-#if DEBUG
+//#if DEBUG
 public struct PreviewPostsRepository: PostsRepository {
     private let sampleSubreddit: Thing = FixtureFinder.previewAboutiOSSub
     
@@ -97,4 +97,4 @@ public struct PreviewPostsRepository: PostsRepository {
         PreviewData.previewPosts
     }
 }
-#endif
+//#endif

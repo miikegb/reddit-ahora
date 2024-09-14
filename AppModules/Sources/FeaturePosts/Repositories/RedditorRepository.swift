@@ -10,37 +10,34 @@ import Combine
 import AppNetworking
 import Core
 
-public protocol RedditorRepository {
-    func fetchRedditorDetails(for redditorId: String) -> AnyPublisher<Redditor, Error>
-    subscript(redditorId: String) -> Redditor? { get }
+public protocol RedditorRepository: Sendable {
+    func fetchDetails(for redditorId: String) async throws -> Redditor
+    subscript(redditorId: String) -> Redditor? { get async }
 }
 
 public final class ProdRedditorRepository: RedditorRepository {
-    private var networkFetcher: Fetcher
-    private var redditorsCache: [String: Redditor] = [:]
+    private let networkFetcher: Fetcher
+    private let cache: InMemoryCache<String, Redditor>
     
     public init(networkFetcher: Fetcher) {
         self.networkFetcher = networkFetcher
+        self.cache = InMemoryCache()
     }
     
     public subscript(redditorId: String) -> Redditor? {
-        redditorsCache[redditorId]
+        get async {
+            await cache[redditorId]
+        }
     }
     
-    public func fetchRedditorDetails(for redditorId: String) -> AnyPublisher<Redditor, any Error> {
-        if let redditor = redditorsCache[redditorId] {
-            return Just(redditor)
-                .setFailureType(to: Error.self)
-                .eraseToAnyPublisher()
+    public func fetchDetails(for redditorId: String) async throws -> Redditor {
+        if let redditor = await cache[redditorId] {
+            return redditor
         }
-        
         let resource = Resource(path: "/user/\(redditorId)/about.json", responseDecoder: .init(for: Thing.self))
         let redditorExtractor = RedditorExtractor()
-        return networkFetcher.fetch(resource)
-            .tryMap {
-                try redditorExtractor($0)
-            }
-            .eraseToAnyPublisher()
+        let thing = try await networkFetcher.asyncFech(resource)
+        return try redditorExtractor(thing)
     }
 }
 
@@ -57,10 +54,8 @@ struct RedditorExtractor: ThingExtractor {
 public struct PreviewRedditorRepository: RedditorRepository {
     private let previewRedditor = Redditor(id: "abc", name: "redditor", created: .now, iconImg: "", snoovatarImg: "", totalKarma: 1000, commentKarma: 1000, linkKarma: 1000)
     
-    public func fetchRedditorDetails(for redditorId: String) -> AnyPublisher<Redditor, Error> {
-        Just(previewRedditor)
-            .setFailureType(to: Error.self)
-            .eraseToAnyPublisher()
+    public func fetchDetails(for redditorId: String) async throws -> Redditor {
+        previewRedditor
     }
     
     public subscript(redditor: String) -> Redditor? {

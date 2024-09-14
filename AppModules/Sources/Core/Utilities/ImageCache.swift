@@ -16,42 +16,32 @@ import UIKit
 public typealias PlatformImage = UIImage
 #endif
 
-struct ImageCache {
-    nonisolated(unsafe) private static var cache: [String: PlatformImage] = [:]
-    
-    static subscript(_ key: String) -> PlatformImage? {
-        get { cache[key] }
-        set {
-            cache[key] = newValue
-        }
-    }
-}
-
-public struct ImageLoadingManager {
+public struct ImageLoadingManager: Sendable {
     private var inFlightImages: Set<String> = []
     private var fetcher = SimpleImageFetcher()
+    private var imageCache: InMemoryCache<String, PlatformImage>
     
-    public init() {}
-    
-    public func loadImage(with url: String) -> AnyPublisher<PlatformImage, Never> {
-        if let cached = ImageCache[url] {
-            return Just(cached)
-                .eraseToAnyPublisher()
-        }
-        
-        return fetcher.fetchImage(from: url)
-            .compactMap {
-                PlatformImage(data: $0)
-            }
-            .handleEvents(receiveOutput: { img in
-                ImageCache[url] = img
-            })
-            .replaceError(with: PlatformImage())
-            .eraseToAnyPublisher()
+    public init() {
+        self.imageCache = InMemoryCache()
     }
     
-    public func getImage(with url: String) -> PlatformImage? {
-        let image = ImageCache[url]
-        return image
+    public func loadImageAsync(with url: String) async -> PlatformImage {
+        if let cached = await imageCache[url] {
+            return cached
+        }
+        do {
+            let data = try await fetcher.fetchImageAsync(from: url)
+            if let img = PlatformImage(data: data) {
+                await imageCache.set(img, for: url)
+                return img
+            }
+            return PlatformImage()
+        } catch {
+            return PlatformImage()
+        }
+    }
+    
+    public func getImage(with url: String) async -> PlatformImage? {
+        await imageCache[url]
     }
 }

@@ -13,8 +13,9 @@ enum AvatarLoadingError: Error {
     case noAvatar
 }
 
+@MainActor
 @dynamicMemberLookup
-final class CommentViewModel: ObservableObject {
+final class CommentViewModel: ObservableObject, Sendable {
     @Published var avatar: PlatformImage?
     lazy var attributedBody: AttributedString = {
         let options = AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnlyPreservingWhitespace)
@@ -31,47 +32,35 @@ final class CommentViewModel: ObservableObject {
     private var redditorRepository: RedditorRepository
     private var imageCacheManager = ImageLoadingManager()
     private var timestamp = TimestampFormatter()
-
-    private var avatarPublisher: AnyPublisher<PlatformImage, Error>?
-    private var avatarSubscription: AnyCancellable?
     
     init(comment: Comment, redditorRepository: RedditorRepository) {
         self.comment = comment
         self.redditorRepository = redditorRepository
-        
-        setupAvatarPublisher()
+    }
+    
+    func fetchRedditor() async -> Redditor? {
+        if let redditor = await redditorRepository[comment.author] {
+            redditor
+        } else {
+            try? await redditorRepository.fetchDetails(for: comment.author)
+        }
     }
     
     subscript<V>(dynamicMember keyPath: KeyPath<Comment, V>) -> V {
         comment[keyPath: keyPath]
     }
     
-    func loadAuthorAvatar() {
-        guard avatar == nil, let avatarPublisher else { return }
-        avatarSubscription = avatarPublisher.receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] completion in
-            self?.avatarSubscription = nil
-        }, receiveValue: { [weak self] image in
-            self?.avatar = image
-        })
-    }
-    
-    // MARK: - Private methods
-    private func setupAvatarPublisher() {
-        if let redditor = redditorRepository[comment.author] {
-            if let avatar = imageCacheManager.getImage(with: redditor.iconImg) {
-                self.avatar = avatar
+    func loadAuthorAvatar() async {
+        guard avatar == nil else { return }
+        if let redittor = await fetchRedditor() {
+            if let cachedAvatar = await imageCacheManager.getImage(with: redittor.iconImg) {
+                avatar = cachedAvatar
             } else {
-                avatarPublisher = imageCacheManager.loadImage(with: redditor.iconImg)
-                    .setFailureType(to: Error.self)
-                    .eraseToAnyPublisher()
+                let img = await imageCacheManager.loadImageAsync(with: redittor.iconImg)
+                avatar = img
             }
         } else {
-            avatarPublisher = redditorRepository.fetchRedditorDetails(for: comment.author)
-                .flatMap { [imageCacheManager] in
-                    imageCacheManager.loadImage(with: $0.iconImg)
-                }
-                .eraseToAnyPublisher()
+            print("Error loading Redditor: \(comment.author)")
         }
     }
 }

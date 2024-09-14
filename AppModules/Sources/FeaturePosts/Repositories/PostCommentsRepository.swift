@@ -10,25 +10,22 @@ import Combine
 import AppNetworking
 import Core
 
-public protocol PostCommentsRepository {
-    func fetchComments(from post: Link) -> AnyPublisher<[Comment], Error>
+public protocol PostCommentsRepository: Sendable {
+    func fetchCommentsAsync(from post: Link) async throws -> [Comment]
 }
 
 public final class ProdPostCommentsRepository: PostCommentsRepository {
-    private var networkFetcher: Fetcher
+    private let networkFetcher: Fetcher
     
     public init(networkFetcher: Fetcher) {
         self.networkFetcher = networkFetcher
     }
     
-    public func fetchComments(from post: Link) -> AnyPublisher<[Comment], Error> {
+    public func fetchCommentsAsync(from post: Link) async throws -> [Comment] {
         let resource = Resource(path: "\(post.permalink).json", responseDecoder: .init(for: [Listing].self))
         let extractor = CommentsExtractor()
-        return networkFetcher.fetch(resource)
-            .map {
-                extractor($0.last)
-            }
-            .eraseToAnyPublisher()
+        let thing = try await networkFetcher.asyncFech(resource)
+        return extractor(thing.last)
     }
 }
 
@@ -42,7 +39,7 @@ struct CommentsExtractor {
 }
 
 public struct PreviewPostCommentsRepository: PostCommentsRepository {
-    public func fetchComments(from post: Link) -> AnyPublisher<[Comment], Error> {
-        Just(PreviewData.previewComments).setFailureType(to: Error.self).eraseToAnyPublisher()
+    public func fetchCommentsAsync(from post: Link) async throws -> [Comment] {
+        PreviewData.previewComments
     }
 }

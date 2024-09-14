@@ -23,7 +23,7 @@ public protocol CommonThing {
     var name: String { get }
 }
 
-public enum Thing: Decodable {
+public enum Thing: Decodable, Sendable {
     case comment(Comment)
     case account(Redditor)
     case link(Link)
@@ -73,7 +73,7 @@ public enum Thing: Decodable {
     }
 }
 
-public struct Listing: Decodable {
+public struct Listing: Decodable, Sendable {
     var kind: String
     var before: String?
     public var after: String?
@@ -104,7 +104,7 @@ public struct Listing: Decodable {
     }
 }
 
-public struct Comment: CommonThing, Decodable {
+public struct Comment: CommonThing, Decodable, Sendable {
     public var id: String
     public var name: String
     public var author: String
@@ -156,7 +156,7 @@ public struct Comment: CommonThing, Decodable {
     }
 }
 
-public struct Redditor: CommonThing, Decodable {
+public struct Redditor: CommonThing, Decodable, Sendable {
     public var id: String
     public var name: String
     var created: Date
@@ -227,7 +227,7 @@ public struct Link: CommonThing, Votable, Created, Decodable, Identifiable, Equa
     }
 }
 
-public struct Subreddit: CommonThing, Decodable, Equatable {
+public struct Subreddit: CommonThing, Decodable, Equatable, Sendable {
     public var id: String
     public var name: String
     public var title: String
@@ -248,7 +248,7 @@ public struct Subreddit: CommonThing, Decodable, Equatable {
     var created: Date
 }
 
-public struct More: CommonThing, Decodable, Equatable {
+public struct More: CommonThing, Decodable, Equatable, Sendable {
     public var id: String
     public var name: String
     var count: Int

@@ -9,6 +9,10 @@ import SwiftUI
 import Combine
 import Core
 
+fileprivate enum K {
+    static let loadingNewPostsThreshold = 5
+}
+
 public struct RedditPageView: View {
     @ObservedObject var viewModel: RedditPageViewModel
     @State private var selectedViewModel: PostViewModel?
@@ -22,9 +26,9 @@ public struct RedditPageView: View {
         List {
             ForEach(viewModel.postsViewModels) { item in
                 PostItemView(viewModel: item)
-                    .onAppear {
-                        if item == viewModel.postsViewModels.last {
-                            viewModel.loadPosts()
+                    .task {
+                        if item == viewModel.postsViewModels.suffix(K.loadingNewPostsThreshold).first {
+                            await viewModel.loadPosts()
                         }
                     }
                     .onTapGesture {
@@ -38,8 +42,8 @@ public struct RedditPageView: View {
             PostDetailsView(viewModel: post)
         }
         .animation(.default, value: viewModel.postsViewModels)
-        .onAppear {
-            viewModel.loadPosts()
+        .task {
+            await viewModel.loadPosts()
         }
     }
 }
@@ -86,8 +90,8 @@ struct PostHeader: View {
                 TimestampView(timestamp: viewModel.postedDateString)
             }
         }
-        .onAppear {
-            viewModel.loadIconIfNeeded()
+        .task {
+            await viewModel.loadIconIfNeeded()
         }
     }
 }
@@ -153,8 +157,8 @@ struct PhotoContentView: View {
             RoundedRectangle(cornerSize: CGSize(width: 5, height: 5))
                 .foregroundStyle(.secondary)
         )
-        .onAppear {
-            viewModel.loadPostImageIfNeeded()
+        .task {
+            await viewModel.loadPostImageIfNeeded()
         }
     }
     
