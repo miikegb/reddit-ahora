@@ -12,7 +12,7 @@ public struct LazyImageView<Placeholder: View>: View {
     @ViewBuilder var placeholder: Placeholder
     var contentMode: ContentMode
     
-    public init(image: Binding<PlatformImage?>, @ViewBuilder placeholder: () -> Placeholder, contentMode: ContentMode = .fit) {
+    public init(image: Binding<PlatformImage?>, contentMode: ContentMode = .fit, @ViewBuilder placeholder: () -> Placeholder) {
         self._image = image
         self.placeholder = placeholder()
         self.contentMode = contentMode

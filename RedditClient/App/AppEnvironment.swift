@@ -13,13 +13,13 @@ struct AppEnvironment {
     var container: AppEnvironmentContainer
     var dependencies: Dependencies
     
-    static func bootstrap() -> AppEnvironment {
+    @MainActor static func bootstrap() -> AppEnvironment {
         let dependencies = createDependencyGraph()
         let container = AppEnvironmentContainer()
         return AppEnvironment(container: container, dependencies: dependencies)
     }
     
-    private static func createDependencyGraph() -> Dependencies {
+    @MainActor private static func createDependencyGraph() -> Dependencies {
         let fetcher = HttpClient(config: .default)
         let subredditRepository = ProdSubredditRepository(networkFetcher: fetcher)
         let commentsRepository = ProdPostCommentsRepository(networkFetcher: fetcher)
@@ -87,7 +87,7 @@ struct Dependencies: EnvironmentKey {
         self.commentsRepository = commentsRepository
     }
     
-    static var defaultValue = Dependencies(
+    @MainActor static var defaultValue = Dependencies(
         postsViewModel: .preview,
         subredditRepository: .preview,
         commentsRepository: .preview

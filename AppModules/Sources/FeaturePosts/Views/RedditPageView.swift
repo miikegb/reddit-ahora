@@ -72,15 +72,15 @@ struct PostHeader: View {
                 Circle()
                     .fill(.secondary)
             }
-            .frame(width: 35)
+            .frame(width: 25)
             .clipShape(Circle())
-            .overlay(.red, in: Circle().stroke(style: StrokeStyle(lineWidth: 2)))
+            .overlay(.red, in: Circle().stroke(style: StrokeStyle(lineWidth: 1)))
             
             HStack(alignment: .lastTextBaseline) {
                 VStack(alignment: .leading) {
                     Text("r/\(viewModel.subreddit)")
-                        .font(.subheadline)
-                        .foregroundStyle(Color.accentColor)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color(white: 0.2))
                     if showRedditor {
                         Text("u/\(viewModel.author)")
                             .font(.callout)
@@ -118,6 +118,9 @@ struct PostActionsView: View {
                 
                 Text("\(upvotes)")
                 
+                Divider()
+                    .padding(.horizontal, 2)
+                
                 Button {
                     print("Downvote tapped...")
                 } label: {
@@ -125,22 +128,45 @@ struct PostActionsView: View {
                 }
                 .buttonStyle(.tappablePlain)
             }
+            .foregroundStyle(Color(white: 0.2))
+            .capsuleBorder()
             
             Color.white.opacity(0.6)
                 .frame(width: 1)
                 .padding(.vertical, 4)
             
-            Label(
-                title: { Text("\(numberComments)") },
-                icon: { Image(systemName: "text.bubble") }
-            )
+            HStack(spacing: 10) {
+                Image(systemName: "bubble")
+                Text("\(numberComments)")
+            }
+            .frame(maxHeight: .infinity)
+            .foregroundStyle(Color(white: 0.2))
+            .capsuleBorder()
         }
-        .padding(.horizontal)
+        .font(.system(size: 14))
         .frame(height: 30)
         .background {
             RoundedRectangle(cornerSize: CGSize(width: 20, height: 10))
                 .foregroundStyle(.white.opacity(0.25))
         }
+    }
+}
+
+struct CapsuleBorderModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .overlay {
+                Capsule(style: .continuous).stroke(lineWidth: 1).foregroundStyle(Color(white: 0.9))
+            }
+    }
+}
+
+extension View {
+    func capsuleBorder() -> some View {
+        self
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .modifier(CapsuleBorderModifier())
     }
 }
 
@@ -150,13 +176,13 @@ struct PhotoContentView: View {
     var body: some View {
         VStack {
             postImage
-                .frame(maxWidth: .infinity, maxHeight: 300)
+//                .frame(maxHeight: .infinity)
                 .cornerRadius(20)
         }
-        .background(
-            RoundedRectangle(cornerSize: CGSize(width: 5, height: 5))
-                .foregroundStyle(.secondary)
-        )
+//        .background(
+//            RoundedRectangle(cornerSize: CGSize(width: 5, height: 5))
+//                .foregroundStyle(.secondary)
+//        )
         .task {
             await viewModel.loadPostImageIfNeeded()
         }
@@ -164,10 +190,12 @@ struct PhotoContentView: View {
     
     @ViewBuilder var postImage: some View {
         if let size = viewModel.imageSize {
-            LazyImageView(image: $viewModel.image) {
+            LazyImageView(image: $viewModel.image, contentMode: .fill) {
                 Color.secondary
             }
-            .frame(height: min(size.height / 3, 300))
+//            .frame(maxWidth: .infinity)
+            .frame(maxHeight: min(size.height / 3, 400))
+//            .frame(height: size.height / 3)
         } else {
             LazyImageView(image: $viewModel.image) {
                 Color.secondary
@@ -185,12 +213,12 @@ struct PostContentView: View {
             PostHeader(viewModel: viewModel)
             
             Text(viewModel.attributedTitle)
-                .font(.title3.bold())
+                .font(.system(size: 17.0, weight: .semibold))
             
             Text(viewModel.attributedBody)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .lineLimit(10)
+                .font(.system(size: 12))
+                .foregroundStyle(Color(white: 0.2))
+                .lineLimit(4)
             
             if viewModel.postHint == "image" {
                 PhotoContentView(viewModel: viewModel)
@@ -205,14 +233,16 @@ struct PostContentView: View {
 
 struct PostItemView: View {
     var viewModel: PostViewModel
-    @State private var isHovering = false
+//    @State private var isHovering = false
     
     var body: some View {
+        let _ = Self._printChanges()
+        
         ZStack(alignment: .leading) {
-            if isHovering {
-                RoundedRectangle(cornerSize: CGSize(width: 20, height: 20))
-                    .foregroundStyle(.white.opacity(0.05))
-            }
+//            if isHovering {
+//                RoundedRectangle(cornerSize: CGSize(width: 20, height: 20))
+//                    .foregroundStyle(.white.opacity(0.05))
+//            }
             
             HStack {
                 PostContentView(viewModel: viewModel)

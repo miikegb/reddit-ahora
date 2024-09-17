@@ -8,7 +8,7 @@
 import Foundation
 import Core
 
-#if DEBUG
+//#if DEBUG
 
 struct PreviewData {
     static var previewPosts: [Link] {
@@ -26,4 +26,4 @@ struct PreviewData {
     }
 }
 
-#endif
+//#endif

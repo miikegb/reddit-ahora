@@ -68,7 +68,7 @@ public final class RedditPostsRepository: PostsRepository, Sendable {
         self.listingsCache = InMemoryCache()
     }
     
-    private func listingPath(for page: RedditPage, sorting: SortResults = .best) -> String {
+    private func listingPath(for page: RedditPage, sorting: SortResults = .new) -> String {
         "\(page.stringify)/\(sorting.path)"
     }
     

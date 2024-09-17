@@ -19,7 +19,7 @@ public final class RedditPageViewModel: ObservableObject {
     private var commentsRepository: PostCommentsRepository
     private var redditorRepository: RedditorRepository
     private var subredditRepository: SubredditRepository
-    private var currentPage: RedditPage = .home
+    private var currentPage: RedditPage = .subreddit(name: "pics")
     private var postsIds: Set<String> = []
     
     public init(postsRepository: PostsRepository,

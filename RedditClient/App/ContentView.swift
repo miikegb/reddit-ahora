@@ -44,8 +44,8 @@ struct HoverButton: View {
 struct NavigationContainer<SidePanel: View, Content: View>: View {
     @Environment(\.runningEnvironment.runningOnPhone) private var runningOnPhone
     
-    var sidePanel: SidePanel
-    var content: Content
+    @ViewBuilder var sidePanel: SidePanel
+    @ViewBuilder var content: Content
     
     init(_ sidePanel: () -> SidePanel, content: () -> Content) {
         self.sidePanel = sidePanel()

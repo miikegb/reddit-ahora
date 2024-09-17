@@ -8,7 +8,7 @@
 import Foundation
 import Core
 
-#if DEBUG
+//#if DEBUG
 
 @dynamicMemberLookup
 final class FixtureFinder {
@@ -26,4 +26,4 @@ final class FixtureFinder {
     }
 }
 
-#endif
+//#endif

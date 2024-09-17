@@ -7,7 +7,7 @@
 
 import Foundation
 
-#if DEBUG
+//#if DEBUG
 
 extension RedditPageViewModel {
     public static var preview: RedditPageViewModel {
@@ -39,4 +39,4 @@ extension RedditorRepository where Self == PreviewRedditorRepository {
     }
 }
 
-#endif
+//#endif
